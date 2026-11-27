@@ -1,7 +1,7 @@
 const buildId = new URL(self.location.href).searchParams.get("v") || "dev";
 importScripts("/static/js/offline-basemap-store.js");
 let localBasemapStore;
-const SHELL_CACHE = `digues-shell-${buildId}`;
+const SHELL_CACHE = `gemapi-shell-${buildId}`;
 const NETWORK_TIMEOUT_MS = 10000;
 
 const SHELL_URLS = [
@@ -14,13 +14,12 @@ const SHELL_URLS = [
   "/static/css/map-disorder-legend.css",
   "/static/css/business-session.css",
   "/static/js/business-context.js",
-  "/static/js/business-bootstrap.js",
-  "/static/js/database-access.js",
   "/static/icons/digues-app.svg",
   "/static/icons/icon-192.png",
   "/static/icons/icon-512.png",
   "/static/js/ai-panel.js",
   "/static/js/app-header.js",
+  "/static/js/technical-shell.js",
   "/static/js/data-view-default.js",
   "/static/js/troncon-form.js",
   "/static/js/troncon-reperage.js",
@@ -155,7 +154,7 @@ self.addEventListener("activate", (event) => {
     self.clients.claim().then(() => caches.keys()).then((cacheNames) => Promise.all(
       cacheNames
         .filter((cacheName) => (
-          cacheName.startsWith("digues-shell-") && cacheName !== SHELL_CACHE
+          cacheName.startsWith("gemapi-shell-") && cacheName !== SHELL_CACHE
         ))
         .map((cacheName) => caches.delete(cacheName)),
     )),

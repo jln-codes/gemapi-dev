@@ -23,10 +23,7 @@
         }, TILEJSON_TIMEOUT_MS);
       });
       const document = (async () => {
-        const scoped = tilejsonUrl.startsWith('/api/bases/') && root.BusinessRuntime?.fetch;
-        const response = await (scoped ? root.BusinessRuntime.fetch(tilejsonUrl,
-          controller ? { signal: controller.signal } : {})
-          : fetch(tilejsonUrl, controller ? { signal: controller.signal } : {}));
+        const response = await fetch(tilejsonUrl, controller ? { signal: controller.signal } : {});
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const tilejson = await response.json();
         const url = tilejson?.tiles?.find(

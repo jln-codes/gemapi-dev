@@ -280,24 +280,23 @@ def write_localisation(connection, identifier, command, reference_revision=None,
     return read_photo(connection,identifier,context=context)
 
 
-def register_routes(app, *, contextual=False):
-    from .media_target import media_route_dependencies
-    prefix = '/api/bases/{business_database_id}' if contextual else '/api'
-    _, read_connection = media_route_dependencies(contextual, 'business.read')
-    update_context, update_connection = media_route_dependencies(contextual, 'business.update', write=True)
-    @app.get(prefix + '/photos/{photo_id}/localisation-options')
+def register_routes(app):
+    from .database import get_connection, get_write_connection
+    read_connection = get_connection
+    update_connection = get_write_connection
+    @app.get('/api/photos/{photo_id}/localisation-options')
     def read_options(photo_id:UUID,troncon_id:UUID|None=None,connection=Depends(read_connection)):
         return options(connection,photo_id,troncon_id)
 
-    @app.put(prefix + '/photos/{photo_id}/localisation')
+    @app.put('/api/photos/{photo_id}/localisation')
     def update(photo_id:UUID,command:PhotoLocalisationUpdate,if_match:str|None=Header(default=None),
                operation_id:str=Header(alias='Operation-Id'),reference_revision:str|None=Header(default=None,alias='Reference-Revision'),
-               origin=Depends(mutation_origin),connection=Depends(update_connection),context=Depends(update_context)):
+               origin=Depends(mutation_origin),connection=Depends(update_connection)):
         if reference_revision is not None:
             if not re.fullmatch(r'[0-9a-f]{64}',reference_revision) or (command.systeme_reperage_id is None and command.mode!='abscisse'):
                 fail(422,'photo-reference-revision-invalid','Empreinte de repérage invalide ou système absent.')
         changes = {'localisation':command.model_dump(mode='json')}
         if reference_revision is not None: changes['referenceRevision'] = reference_revision
-        return execute_mutation(connection,'photos','update',lambda:write_localisation(connection,photo_id,command,reference_revision,context=context),
+        return execute_mutation(connection,'photos','update',lambda:write_localisation(connection,photo_id,command,reference_revision),
           identifier=photo_id,if_match=if_match,operation_id=operation_id,origin=origin,
           changes=changes)

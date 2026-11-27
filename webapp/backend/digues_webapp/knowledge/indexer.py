@@ -8,7 +8,7 @@ from pathlib import Path, PurePosixPath
 import re
 import subprocess
 from typing import Iterable, Protocol
-from digues_app.control.environment import environment_value
+import os
 
 from ..database import open_write_connection
 from .repository import Chunk, KnowledgeRepository, StoredDocument
@@ -266,7 +266,7 @@ def index_repository(
 
 
 def main() -> int:
-    root = Path(environment_value(REPOSITORY_ROOT_ENV, default=str(Path.cwd())))
+    root = Path(os.getenv(REPOSITORY_ROOT_ENV, str(Path.cwd())))
     try:
         with open_write_connection() as connection:
             with connection.transaction():

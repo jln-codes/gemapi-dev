@@ -15,9 +15,6 @@ from fastapi import HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from starlette.concurrency import run_in_threadpool
 
-from digues_app.control.database import open_control_connection
-from digues_app.control.lidar_policy import read_public_policy
-from .business_context import resolve_business_context
 from .database import open_read_connection
 from .lidar_masks import calculate_lidar_masks, MAX_ENSEMBLES
 from .lidar_masks_http import LidarEnsemble
@@ -83,8 +80,8 @@ async def read_lidar_distribution_request(request: Request, model):
         raise HTTPException(422, 'Demande LiDAR invalide.') from None
 
 
-def _authorized_masks(context, selection, radius_m):
-    with open_read_connection(context) as connection:
+def _authorized_masks(selection, radius_m):
+    with open_read_connection() as connection:
         result = calculate_lidar_masks(
             connection, radius_m=radius_m,
             systeme_ids=[row.id for row in selection.ensembles if row.type == 'SE'],
@@ -118,12 +115,7 @@ def _authorized_masks(context, selection, radius_m):
                     'masks': [coverage]}
 
 
-def current_policy():
-    with open_control_connection() as connection:
-        return read_public_policy(connection)
-
-
-def _check_policy(version):
+def _check_policy(current_policy, version):
     if current_policy()['policy_version'] != version:
         raise HTTPException(409, 'Buffer LiDAR modifié ; recalculer le plan.')
 
@@ -177,7 +169,7 @@ async def _call_while_connected(request, path, body, *, max_bytes):
             await asyncio.gather(task, return_exceptions=True)
 
 
-async def _prepared(request, context, selection):
+async def _prepared(request, selection, current_policy):
     _internal_settings()  # The product remains disabled before any spatial work.
     try:
         await asyncio.wait_for(_WORK_SLOTS.acquire(), timeout=0.05)
@@ -187,7 +179,7 @@ async def _prepared(request, context, selection):
         policy = await run_in_threadpool(current_policy)
         if selection.policy_version != policy['policy_version']:
             raise HTTPException(409, 'Buffer LiDAR modifié ; recalculer le plan.')
-        masks, coverage = await run_in_threadpool(_authorized_masks, context, selection, policy['buffer_m'])
+        masks, coverage = await run_in_threadpool(_authorized_masks, selection, policy['buffer_m'])
         if await request.is_disconnected():
             raise HTTPException(408, 'Demande LiDAR annulée.')
         return masks, coverage, policy
@@ -196,15 +188,8 @@ async def _prepared(request, context, selection):
         raise
 
 
-def _check_context(context, user, request, settings):
-    fresh = resolve_business_context(user, context.business_database_id, 'business.read',
-                                     session_token=request.cookies.get(settings.cookie_name, ''))
-    if fresh != context:
-        raise HTTPException(403, 'Contexte métier modifié ; nouvelle demande requise.')
-
-
-async def lidar_plan_response(request, context, user, settings, selection):
-    masks, coverage, policy = await _prepared(request, context, selection)
+async def lidar_plan_response(request, selection, *, current_policy, revalidate_access):
+    masks, coverage, policy = await _prepared(request, selection, current_policy)
     try:
         code, _headers, payload = await _call_while_connected(request, '/internal/lidar/v1/plan',
             {'masks': coverage, 'view': selection.vue.model_dump()},
@@ -212,8 +197,8 @@ async def lidar_plan_response(request, context, user, settings, selection):
         if code != 200:
             raise HTTPException(413 if code == 413 else 503, 'Planification LiDAR indisponible.')
         plan = json.loads(payload)
-        await run_in_threadpool(_check_context, context, user, request, settings)
-        await run_in_threadpool(_check_policy, policy['policy_version'])
+        await run_in_threadpool(revalidate_access)
+        await run_in_threadpool(_check_policy, current_policy, policy['policy_version'])
         plan['buffer_m'] = policy['buffer_m']
         plan['policy_version'] = policy['policy_version']
         plan['ensembles'] = [{'type': mask['type'], 'id': mask['id'],
@@ -228,14 +213,14 @@ async def lidar_plan_response(request, context, user, settings, selection):
         _WORK_SLOTS.release()
 
 
-async def lidar_block_response(request, context, user, settings, selection):
-    masks, coverage, policy = await _prepared(request, context, selection)
+async def lidar_block_response(request, selection, *, current_policy, revalidate_access):
+    masks, coverage, policy = await _prepared(request, selection, current_policy)
     try:
         code, headers, payload = await _call_while_connected(request, '/internal/lidar/v1/block',
             {'masks': coverage, 'view': selection.vue.model_dump(),
              'block': selection.bloc.model_dump()}, max_bytes=MAX_TIFF_BYTES)
-        await run_in_threadpool(_check_context, context, user, request, settings)
-        await run_in_threadpool(_check_policy, policy['policy_version'])
+        await run_in_threadpool(revalidate_access)
+        await run_in_threadpool(_check_policy, current_policy, policy['policy_version'])
         if code == 404:
             raise HTTPException(404, 'Bloc absent du plan courant.')
         if code == 204 and headers.get('x-lidar-status') == 'NO_COVERAGE':

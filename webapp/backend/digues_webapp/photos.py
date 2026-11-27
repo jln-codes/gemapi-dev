@@ -73,16 +73,14 @@ def enrich_photo(photo, *, context=None):
     if not key:
         return photo
     try:
-        storage = get_media_storage(required=False, context=context)
+        storage = get_media_storage(required=False)
         manifest = storage.inspect(key) if storage else None
         if not manifest:
             return photo
         if manifest["owner"]["photo_id"] != str(photo["id"]) or manifest["owner"]["observation_id"] != str(photo["observation_id"]):
-            if context:
-                raise MediaScopeError("Photo owner mismatch")
-            return photo
+            raise MediaScopeError("Photo owner mismatch")
         photo["nom_fichier"] = manifest["source_name"]
-        prefix = f"/api/bases/{context.business_database_id}" if context else "/api"
+        prefix = "/api"
         photo["variants"] = {name: {**item, "content_url": f"{prefix}/photos/{photo['id']}/content?variant={name}"}
                              for name, item in manifest["variants"].items()
                              if name in {"original", "preview", "thumbnail"}}
@@ -154,7 +152,7 @@ def create_photo(connection, creation, operation_id, origin=None, *, context=Non
             fail(422, "observation-not-found", "L’Observation parente n’existe pas.")
         values = creation.model_dump(include=set(PhotoMetadata.model_fields))
         validate_references(connection, values)
-        storage = get_media_storage(context=context)
+        storage = get_media_storage()
         manifest = storage.inspect(creation.upload_ref)
         consumed = check_prepared(connection, manifest, creation.id, creation.observation_id, creation.file_sha256)
         if consumed:
@@ -212,24 +210,22 @@ def update_photo(connection, identifier, update, *, context=None):
         return read_photo(connection, identifier, context=context)
 
 
-def register_routes(application, *, contextual=False):
-    from .media_target import media_route_dependencies
-    prefix = "/api/bases/{business_database_id}" if contextual else "/api"
-    read_context, read_connection = media_route_dependencies(contextual, "business.read")
-    create_context, create_connection = media_route_dependencies(contextual, "business.create", write=True)
-    update_context, update_connection = media_route_dependencies(contextual, "business.update", write=True)
+def register_routes(application):
+    from .database import get_connection, get_write_connection
+    read_connection = get_connection
+    create_connection = get_write_connection
+    update_connection = get_write_connection
     from .photo_localisation import register_routes as register_localisation
-    register_localisation(application, contextual=contextual)
-    @application.put(prefix + "/photo-uploads/{photo_id}/{sha256}")
+    register_localisation(application)
+    @application.put("/api/photo-uploads/{photo_id}/{sha256}")
     async def upload_photo(photo_id: UUID, sha256: str, request: Request, observation_id: UUID,
-                           filename: str = Query(max_length=200), connection=Depends(create_connection),
-                           context=Depends(create_context)):
+                           filename: str = Query(max_length=200), connection=Depends(create_connection)):
         if not re.fullmatch(SHA_PATTERN, sha256):
             fail(422, "file-hash-invalid", "Empreinte SHA-256 invalide.")
         try:
             if not connection.execute("SELECT 1 FROM public.observations WHERE id=%s", (observation_id,)).fetchone():
                 fail(422, "observation-not-found", "L’Observation parente n’existe pas.")
-            storage = get_media_storage(context=context)
+            storage = get_media_storage()
             declared = request.headers.get("content-length")
             if declared and (not declared.isdigit() or int(declared) > ABSOLUTE_MEDIA_LIMIT_BYTES):
                 fail(413, "file-too-large", "Le fichier dépasse la limite de 20 Mio.")
@@ -264,53 +260,52 @@ def register_routes(application, *, contextual=False):
         except (OSError, ValueError, KeyError) as exc:
             raise HTTPException(503, {"code": "media-unavailable", "message": "Le stockage du fichier est indisponible."}) from exc
 
-    @application.get(prefix + "/photo-uploads/{photo_id}/{sha256}")
-    def upload_status(photo_id: UUID, sha256: str, observation_id: UUID, connection=Depends(create_connection),
-                      context=Depends(create_context)):
+    @application.get("/api/photo-uploads/{photo_id}/{sha256}")
+    def upload_status(photo_id: UUID, sha256: str, observation_id: UUID, connection=Depends(create_connection)):
         try:
             with connection.transaction():
                 lock_photo(connection, photo_id)
                 if not connection.execute("SELECT 1 FROM public.observations WHERE id=%s", (observation_id,)).fetchone():
                     fail(422, "observation-not-found", "L’Observation parente n’existe pas.")
-                storage = get_media_storage(context=context)
+                storage = get_media_storage()
                 manifest = storage.prepared_for(photo_id)
                 check_prepared(connection, manifest, photo_id, observation_id, sha256)
                 return prepared_descriptor(manifest)
         except (OSError, ValueError, KeyError) as exc:
             raise HTTPException(503, "Stockage des photos indisponible.") from exc
 
-    @application.post(prefix + "/photos", status_code=201)
+    @application.post("/api/photos", status_code=201)
     def post_photo(creation: PhotoCreate, operation_id: str = Header(alias="Operation-Id"),
-                   origin=Depends(mutation_origin), connection=Depends(create_connection), context=Depends(create_context)):
+                   origin=Depends(mutation_origin), connection=Depends(create_connection)):
         try:
-            return create_photo(connection, creation, operation_id, origin, context=context)
+            return create_photo(connection, creation, operation_id, origin)
         except HTTPException:
             raise
         except Exception as exc:
             raise WebDatabaseError("Création Photo non confirmée.") from exc
 
-    @application.get(prefix + "/photos/{photo_id}")
-    def get_photo(photo_id: UUID, connection=Depends(read_connection), context=Depends(read_context)):
-        return read_photo(connection, photo_id, context=context)
+    @application.get("/api/photos/{photo_id}")
+    def get_photo(photo_id: UUID, connection=Depends(read_connection)):
+        return read_photo(connection, photo_id)
 
-    @application.put(prefix + "/photos/{photo_id}")
+    @application.put("/api/photos/{photo_id}")
     def put_photo(photo_id: UUID, update: PhotoMetadata, if_match: str | None = Header(default=None),
                   operation_id: str = Header(alias="Operation-Id"), origin=Depends(mutation_origin),
-                  connection=Depends(update_connection), context=Depends(update_context)):
-        return execute_mutation(connection, "photos", "update", lambda: update_photo(connection, photo_id, update, context=context),
+                  connection=Depends(update_connection)):
+        return execute_mutation(connection, "photos", "update", lambda: update_photo(connection, photo_id, update),
                                 identifier=photo_id, if_match=if_match, operation_id=operation_id, origin=origin,
                                 changes=update.model_dump(mode="json", exclude_unset=True))
 
-    @application.get(prefix + "/photos/{photo_id}/content")
+    @application.get("/api/photos/{photo_id}/content")
     def photo_content(photo_id: UUID, variant: Literal["original", "preview", "thumbnail"] = "original",
-                      connection=Depends(read_connection), context=Depends(read_context)):
+                      connection=Depends(read_connection)):
         row = connection.execute("SELECT storage_key,observation_id FROM public.photos WHERE id=%s", (photo_id,)).fetchone()
         if not row or not row[0]:
             fail(404, "photo-content-unavailable", "Fichier Photo indisponible.")
         try:
-            storage = get_media_storage(context=context)
+            storage = get_media_storage()
             manifest = storage.inspect(row[0])
-            if context and manifest and (manifest["owner"]["photo_id"] != str(photo_id)
+            if manifest and (manifest["owner"]["photo_id"] != str(photo_id)
                     or manifest["owner"]["observation_id"] != str(row[1])):
                 raise MediaScopeError("Photo owner mismatch")
             if not manifest or manifest["owner"]["photo_id"] != str(photo_id) or manifest["owner"]["observation_id"] != str(row[1]) or variant not in manifest["variants"]:

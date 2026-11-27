@@ -7,7 +7,7 @@
 
   const ID = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 
-  function normalizeCatalogue(payload, businessDatabaseId = null) {
+  function normalizeCatalogue(payload) {
     if (payload?.contract_version !== 1 || !Array.isArray(payload.basemaps)) {
       throw new Error("Contrat du catalogue de fonds invalide.");
     }
@@ -243,7 +243,7 @@
       const response = await request("/api/basemaps", { cache: "no-store", credentials: "same-origin" });
       if (!response.ok) throw new Error(`Catalogue HTTP ${response.status}`);
       const payload = await response.json();
-      const catalogue = normalizeCatalogue(payload, win.BusinessRuntime?.context?.business_database_id);
+      const catalogue = normalizeCatalogue(payload);
       try { await local.saveCatalogue?.(payload); } catch (error) {
         logger.warn("Catalogue local non enregistré", error);
       }
@@ -253,7 +253,7 @@
     async function readOfflineState() {
       const state = await local.getState();
       if (!state) return null;
-      const catalogue = normalizeCatalogue(state.catalogue, win.BusinessRuntime?.context?.business_database_id);
+      const catalogue = normalizeCatalogue(state.catalogue);
       return { ...catalogue, packages: state.packages || {} };
     }
 

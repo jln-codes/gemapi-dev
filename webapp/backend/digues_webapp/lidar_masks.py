@@ -124,8 +124,8 @@ temps facultatifs sont écrits dans `timings_out`, jamais dans le résultat
 déterministe. Aucun ensemble inexistant ni forme anomalique ne donne de masque
 partiel. Les géométries sources ne sont jamais modifiées.
     """
-    from digues_app.control.lidar_policy import validate_buffer
-    validate_buffer(radius_m)
+    if type(radius_m) not in (int, float) or not 5 <= radius_m <= 100:
+        raise ValueError("Le rayon LiDAR doit être compris entre 5 et 100 mètres.")
     systemes, amenagements = _selection(systeme_ids, amenagement_ids)
     if connection.info.transaction_status != TransactionStatus.IDLE:
         raise ValueError("Le calcul requiert une connexion hors transaction.")

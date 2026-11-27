@@ -6,7 +6,7 @@
   const MAX_MEMORY_BLOCKS = core.MAX_BLOCKS;
   const REQUEST_DELAY_MS = 220;
   const state = { generation: 0, controller: null, timer: null, selection: [],
-    base: null, catalog: null, blocks: new Map(), sampled: null, sampledSize: null,
+    blocks: new Map(), sampled: null, sampledSize: null,
     networkBytes: 0, cacheCounts: { MEMORY: 0, HIT: 0, WAIT: 0, MISS: 0 },
     currentBlocks: new Map(), map: null, overlay: null, disposed: false };
 
@@ -36,11 +36,7 @@
     state.controller?.abort(); state.controller = null;
   }
   function contextUrl(resource) {
-    const base = state.base;
-    if (!base || !state.catalog) throw new Error("Base métier absente.");
-    const query = new URLSearchParams({ context_user_id: state.catalog.user_id,
-      context_data_epoch: base.data_epoch, context_instance_id: state.catalog.instance_id });
-    return `/api/bases/${base.business_database_id}/${resource}?${query}`;
+    return `/api/${resource}`;
   }
   async function jsonPost(resource, body, signal) {
     const response = await fetch(contextUrl(resource), { method: "POST", credentials: "same-origin",
@@ -214,29 +210,7 @@
   async function initialize() {
     if (!L || !proj4 || !GeoTIFF || !core || !canvas) throw new Error("Bibliothèques cartographiques absentes.");
     canvas.defineProjection(proj4);
-    const [userResponse, catalogResponse] = await Promise.all([
-      fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" }),
-      fetch("/api/auth/databases", { credentials: "same-origin", cache: "no-store" }),
-    ]);
-    if (!userResponse.ok || !catalogResponse.ok) throw new Error("Session requise. Se connecter depuis /carte.");
-    const user = await userResponse.json();
-    state.catalog = await catalogResponse.json();
-    if (user.id !== state.catalog.user_id) throw new Error("Contexte de session incohérent.");
-    const bases = state.catalog.databases.filter(base => base.status === "active" &&
-      base.permissions.includes("business.read"));
-    if (!bases.length) throw new Error("Aucune base métier autorisée.");
-    const select = $("business-base");
-    for (const base of bases) select.add(new Option(`${base.structure_name} — ${base.display_name}`,
-      base.business_database_id));
-    const requested = new URL(location.href).searchParams.get("base");
-    const chosen = bases.find(base => base.slug === requested || base.business_database_id === requested) || bases[0];
-    select.value = chosen.business_database_id; state.base = chosen;
     const map = setupMap();
-    select.addEventListener("change", () => {
-      cancel(); state.base = bases.find(base => base.business_database_id === select.value);
-      state.selection = []; state.blocks.clear(); state.currentBlocks.clear(); state.sampled = null;
-      state.overlay.clear(); memoryMetric(); message("Saisir une sélection explicite pour cette base.");
-    });
     $("selection-form").addEventListener("submit", async event => {
       event.preventDefault();
       try {

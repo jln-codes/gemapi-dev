@@ -171,18 +171,14 @@ def _provider(name, deadline):
 
 
 def _https(name, deadline):
-    from .auth import AuthSettings
     import os
-    prefix = 'ADMIN' if name == 'https_admin' else 'AUTH'
-    if not os.getenv(prefix + '_ORIGIN'):
+    value = os.getenv("GEMAPI_PUBLIC_ORIGIN")
+    if not value:
         return {'status': 'not_configured', 'check': 'Origine HTTPS non configurée.', 'network_attempted': False}
-    try:
-        config = AuthSettings.from_env(prefix)
-    except Exception:
-        raise ProbeFailure('configuration') from None
-    if not config.secure:
-        return {'status': 'not_configured', 'check': 'HTTPS désactivé explicitement pour cette origine locale.', 'network_attempted': False}
-    origin = urlsplit(config.origin)
+    origin = urlsplit(value)
+    if (origin.scheme != "https" or not origin.hostname or origin.username or origin.password
+            or origin.path not in {"", "/"} or origin.query or origin.fragment):
+        raise ProbeFailure('configuration')
     context = ssl.create_default_context()
     with socket.create_connection((origin.hostname, origin.port or 443), timeout=IO_TIMEOUT) as connection:
         with context.wrap_socket(connection, server_hostname=origin.hostname) as secure:

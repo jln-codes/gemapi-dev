@@ -60,13 +60,7 @@ RUN apt-get update \
         util-linux \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 --shell /usr/sbin/nologin appuser \
-    && mkdir -p /var/lib/digues/media /var/lib/digues/runtime-config \
-        /var/lib/digues/profiles /var/lib/digues/provisioning/state \
-        /var/lib/digues/import-secrets /var/lib/digues/import-worker-private \
-    && chown -R appuser:appuser /var/lib/digues \
-    && chmod 700 /var/lib/digues/media /var/lib/digues/runtime-config \
-        /var/lib/digues/profiles /var/lib/digues/provisioning /var/lib/digues/provisioning/state \
-        /var/lib/digues/import-secrets /var/lib/digues/import-worker-private
+    && install -d -m 700 -o appuser -g appuser /var/lib/gemapi/media
 
 COPY --from=dependencies /install /usr/local
 
@@ -82,24 +76,14 @@ RUN python -m pip install --no-deps --no-index --find-links=/app-wheels \
         digues-app digues-webapp \
     && python -m pip check
 
-COPY README.md ./README.md
-ENV DIGUES_HELP_ROOT=/app
-
-COPY docker/entrypoint.sh /usr/local/bin/digues-entrypoint.sh
-# COPY preserves checkout modes (some historical source files are 0600).
-# Only public help documents live under /app; secrets stay in private volumes.
-RUN chmod 755 /usr/local/bin/digues-entrypoint.sh && chmod -R a+rX /app
-
-# Le modèle versionné fait partie de la wheel utilisée par tous les services.
-# Vérifier sa lecture et ses empreintes avec l'identité d'exécution, sans les
-# sources Ecore privées (elles sont vérifiées lors de la compilation contrôlée).
-RUN setpriv --reuid=appuser --regid=appuser --init-groups \
-    python -c "from digues_app.master_model.engine import DEFAULT_MODEL_PATH, check_model_freshness, load_model; check_model_freshness(load_model(DEFAULT_MODEL_PATH), check_source_hashes=False)"
+COPY LICENSE NOTICE ./
+COPY docker/entrypoint.sh /usr/local/bin/gemapi-entrypoint.sh
+RUN chmod 755 /usr/local/bin/gemapi-entrypoint.sh
 
 # Provenance non secrète, appliquée après les installations et validations.
 # Le runtime ne consulte jamais git ; seul le build explicite fixe cette valeur.
-ARG DIGUES_BUILD_REVISION=unknown
-ENV DIGUES_BUILD_REVISION=${DIGUES_BUILD_REVISION}
+ARG GEMAPI_BUILD_REVISION=unknown
+ENV GEMAPI_BUILD_REVISION=${GEMAPI_BUILD_REVISION}
 
 EXPOSE 8000
 
@@ -110,5 +94,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
 
 # L'entrypoint prépare le volume média s'il est monté, puis exécute la commande
 # sous l'UID 10001.
-ENTRYPOINT ["/usr/local/bin/digues-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/gemapi-entrypoint.sh"]
 CMD ["python", "-m", "uvicorn", "digues_webapp.app:app", "--host", "0.0.0.0", "--port", "8000"]

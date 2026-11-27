@@ -32,8 +32,6 @@ class BusinessPhotoLoader:
     disappear into that fallback: check() is mandatory before returning the PDF.
     """
     def __init__(self, connection, context):
-        if context is None:
-            raise ValueError('An explicit report media target is required')
         self.connection, self.context = connection, context
         self.error = None
 
@@ -113,15 +111,13 @@ def render_situation_map(context) -> bytes | None:
         return None
 
 
-def register_routes(application, *, contextual=False) -> None:
-    from .media_target import media_route_dependencies
-    context_dependency, connection_dependency = media_route_dependencies(contextual, 'exports.read')
-    prefix = '/api/bases/{business_database_id}' if contextual else '/api'
-    @application.get(prefix + "/desordres/{desordre_id}/pdf")
+def register_routes(application) -> None:
+    from .database import get_connection, get_write_connection
+    connection_dependency = get_connection
+    @application.get("/api/desordres/{desordre_id}/pdf")
     def desordre_pdf(
         desordre_id: UUID,
         connection: Any = Depends(connection_dependency),
-        context=Depends(context_dependency),
     ) -> Response:
         from digues_app.reports.naming import content_disposition, disorder_pdf_filename
         from digues_app.reports.pdf import render_disorder_sheet_pdf
@@ -135,14 +131,13 @@ def register_routes(application, *, contextual=False) -> None:
         except DisorderSheetNotFound as exc:
             raise HTTPException(status_code=404, detail="Désordre introuvable.") from exc
 
-        loader = BusinessPhotoLoader(connection, context) if context else load_photo_bytes
+        loader = BusinessPhotoLoader(connection, None)
         content = render_disorder_sheet_pdf(
             sheet,
             photo_loader=loader,
             map_renderer=render_situation_map,
         )
-        if context:
-            loader.check()
+        loader.check()
         filename = disorder_pdf_filename(sheet.section_label, sheet.designation)
         return Response(
             content=content,

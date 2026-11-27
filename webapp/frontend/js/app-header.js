@@ -21,11 +21,10 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  const INTERFACES = new Set(["map", "data", "admin"]);
+  const INTERFACES = new Set(["map", "data"]);
   const NETWORK_STATUSES = new Set(["unknown", "checking", "online", "offline"]);
   const DATA_MIN_WIDTH = 700;
   const CONFIG = Object.freeze({
-    admin: Object.freeze({ status: "Administration · en ligne uniquement" }),
     map: Object.freeze({
       switchHref: "/base",
       switchTarget: "data",
@@ -42,7 +41,7 @@
 
   function capabilities({ interfaceType, width, standalone }) {
     if (!INTERFACES.has(interfaceType)) throw new TypeError("Interface inconnue");
-    const canAccessData = interfaceType !== "admin" && !standalone && Number(width) >= DATA_MIN_WIDTH;
+    const canAccessData = !standalone && Number(width) >= DATA_MIN_WIDTH;
     return Object.freeze({
       canAccessData,
       canShowInterfaceSwitch: canAccessData,
@@ -230,22 +229,10 @@
   function render(header, interfaceType) {
     const config = CONFIG[interfaceType];
     if (!config) throw new TypeError("Interface inconnue");
-    if (interfaceType === "admin") {
-      header.innerHTML = `
-        <div class="app-brand"><strong>digues.app</strong><span>administration · online-only</span></div>
-        <div class="header-navigation"><div class="app-navigation-viewport">
-          <nav class="main-navigation" aria-label="Administration">
-            <a class="menu-button" data-admin-route href="/">Paramètres</a>
-            <a class="menu-button" data-admin-route href="/structures">Structures</a>
-            <a class="menu-button" data-admin-route href="/bases">Bases</a>
-            <a class="menu-button" data-admin-route href="/users">Utilisateurs</a>
-            <a class="menu-button" data-admin-route href="/jobs">Jobs</a>
-            <a class="menu-button" data-admin-route href="/diagnostics">Santé</a>
-          </nav></div></div>
-        <span id="identity"></span><button id="logout" type="button" class="menu-button">Se déconnecter</button>`;
-      return header;
-    }
-    const commands = interfaceType === "map" ? mapCommands() : dataCommands();
+    const technical = header.parentElement?.hasAttribute("data-technical-shell");
+    const commands = technical ? (interfaceType === "map"
+      ? '<button id="open-technical-basemaps" type="button" class="menu-button" aria-expanded="false" aria-controls="pwa-settings-panel">Fonds de carte</button>'
+      : "") : (interfaceType === "map" ? mapCommands() : dataCommands());
     header.innerHTML = `
       <div class="app-brand">
         <strong>digues.app</strong>
@@ -255,24 +242,21 @@
         <div class="app-navigation-viewport">
           <nav class="main-navigation" aria-label="Navigation ${interfaceType === "map" ? "principale" : "Données"}">
             ${commands}
-            ${settings()}
-            <button id="toggle-ai" type="button" class="menu-button"
+            ${technical ? "" : settings()}
+            <button ${technical ? "hidden" : ""} id="toggle-ai" type="button" class="menu-button"
               aria-controls="ai-panel" aria-expanded="false">Assistant IA</button>
-            <button id="toggle-help" type="button" class="menu-button"
+            <button ${technical ? "hidden" : ""} id="toggle-help" type="button" class="menu-button"
               aria-controls="help-modal" aria-expanded="false" aria-haspopup="dialog">Aide</button>
           </nav>
         </div>
       </div>
-      <button id="toggle-heritage" class="heritage-tab" type="button"
+      <button ${technical ? "hidden" : ""} id="toggle-heritage" class="heritage-tab" type="button"
         aria-controls="heritage-panel" aria-expanded="false" aria-label="Ouvrir le patrimoine"
         title="Ouvrir le patrimoine"><svg class="heritage-tab-shape" viewBox="0 0 24 150"
           preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 19 9 Q24 11 24 15 V135 Q24 139 19 141 L0 150 Z"/></svg>
         <span aria-hidden="true">${[..."PATRIMOINE"].map(letter => `<span>${letter}</span>`).join("")}</span></button>
       <div class="header-actions" role="group" aria-label="Choix de vue, compte et état du serveur">
         ${interfaceToggle(interfaceType, config)}
-        <button id="open-business-session" class="header-action" type="button" aria-label="Compte et base, contrôle à venir" aria-disabled="true" title="Compte et base : contrôle à venir">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.657 3.582 3 8 3s8 -1.343 8 -3V6"/><path d="M4 12v6c0 1.657 3.582 3 8 3s8 -1.343 8 -3v-6"/></svg>
-        </button>
         <span id="network-status" class="header-action header-network-status" role="img" aria-label="État du serveur en cours de vérification" title="État du serveur en cours de vérification" aria-live="polite" aria-atomic="true">
           <svg data-network-icon="network" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 9a6 6 0 1 0 12 0a6 6 0 0 0 -12 0"/><path d="M12 3c1.333 .333 2 2.333 2 6s-.667 5.667 -2 6"/><path d="M12 3c-1.333 .333 -2 2.333 -2 6s.667 5.667 2 6"/><path d="M6 9h12"/><path d="M3 20h7"/><path d="M14 20h7"/><path d="M10 20a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M12 15v3"/></svg>
           <svg data-network-icon="network-off" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6.528 6.536a6 6 0 0 0 7.942 7.933m2.247 -1.76a6 6 0 0 0 -8.427 -8.425"/><path d="M12 3c1.333 .333 2 2.333 2 6c0 .337 -.006 .66 -.017 .968m-.55 3.473c-.333 .884 -.81 1.403 -1.433 1.559"/><path d="M12 3c-.936 .234 -1.544 1.29 -1.822 3.167m-.16 3.838c.116 3.029 .776 4.695 1.982 4.995"/><path d="M6 9h3m4 0h5"/><path d="M3 20h7"/><path d="M14 20h7"/><path d="M10 20a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/><path d="M12 15v3"/><path d="M3 3l18 18"/></svg>
@@ -280,7 +264,7 @@
           <svg data-network-icon="wifi-off" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M12 18l.01 0"/><path d="M9.172 15.172a4 4 0 0 1 5.656 0"/><path d="M6.343 12.343a7.963 7.963 0 0 1 3.864 -2.14m4.163 .155a7.965 7.965 0 0 1 3.287 2"/><path d="M3.515 9.515a12 12 0 0 1 3.544 -2.455m3.101 -.92a12 12 0 0 1 10.325 3.374"/><path d="M3 3l18 18"/></svg>
         </span>
       </div>
-      <p id="status" role="status">${config.status}</p>`;
+      <p id="status" role="status">${technical ? "" : config.status}</p>`;
     mountNotifications(header);
     return header;
   }
@@ -340,8 +324,9 @@
       header.parentElement?.style.setProperty("--app-header-bottom", edge);
       positionSettings();
     }
-    urlModeSelect.closest("label").hidden = Boolean(runtime?.legacy);
-    urlModeStatus.hidden = Boolean(runtime?.legacy);
+    if (urlModeSelect) {
+    urlModeSelect.closest("label").hidden = !runtime;
+    urlModeStatus.hidden = !runtime;
     urlModeSelect.value = runtime?.urlMode?.() || "position";
     urlModeSelect.addEventListener("change", () => {
       try {
@@ -355,6 +340,7 @@
     windowTarget.addEventListener("storage", event => {
       if (event.key === runtime?.urlModeKey) urlModeSelect.value = runtime.urlMode();
     });
+    }
     const viewport = header.querySelector(".app-navigation-viewport");
     const networkButton = header.querySelector("#network-status");
     const standaloneQuery = windowTarget.matchMedia("(display-mode: standalone)");
@@ -410,6 +396,7 @@
     }
 
     function positionSettings() {
+      if (!settingsMenu) return;
       if (!settingsMenu.open) {
         settingsList.style.removeProperty("--compact-menu-left");
         settingsList.style.removeProperty("--compact-menu-top");
@@ -424,7 +411,7 @@
       });
     }
 
-    settingsMenu.addEventListener("toggle", positionSettings);
+    settingsMenu?.addEventListener("toggle", positionSettings);
     viewport.addEventListener("scroll", positionSettings, { passive: true });
     windowTarget.addEventListener("resize", applyCapabilities);
     windowTarget.addEventListener("resize", positionSettings);

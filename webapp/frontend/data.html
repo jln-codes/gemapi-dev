@@ -12,11 +12,12 @@
     <link rel="stylesheet" href="/static/css/business-session.css">
   </head>
   <body class="data-page" data-interface="data">
-    <main hidden>
+    <main data-technical-shell>
       <header class="app-header" data-interface="data"></header>
-      <script type="application/x-business-script" data-business-src="/static/js/app-header.js"></script>
+      <script src="/static/js/app-header.js"></script>
 
-      <div id="app-workspace" class="data-workspace">
+      <p class="technical-access-status" role="status">L’accès aux données est fermé dans cette version.</p>
+      <div id="app-workspace" hidden class="data-workspace">
         <section id="data-statistics-view" class="data-statistics-view" aria-labelledby="data-statistics-title">
           <h1 id="data-statistics-title">Statistiques</h1>
           <p>Le tableau de statistiques sera disponible prochainement.</p>
@@ -274,9 +275,7 @@
     <script type="application/x-business-script" data-business-src="/static/js/base-detail-editor.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/base-detail-controller.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/data-view.js"></script>
-    <script type="application/x-business-script" data-business-src="/static/js/pwa.js"></script>
-    <script src="/static/js/business-context.js"></script>
-    <script src="/static/js/database-access.js"></script>
-    <script src="/static/js/business-bootstrap.js"></script>
+    <script src="/static/js/pwa.js"></script>
+    <script src="/static/js/technical-shell.js"></script>
   </body>
 </html>

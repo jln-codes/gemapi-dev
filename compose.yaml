@@ -1,0 +1,40 @@
+name: gemapi-dev
+services:
+  app:
+    build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-}
+      DATABASE_READONLY_URL: ${DATABASE_READONLY_URL:-}
+      DATABASE_AI_READONLY_URL: ${DATABASE_AI_READONLY_URL:-}
+      MEDIA_BACKEND: filesystem
+      MEDIA_ROOT: /var/lib/gemapi/media
+      BASEMAP_RASTER_URL: http://basemap:8788
+    volumes:
+      - media:/var/lib/gemapi/media
+
+  basemap:
+    build: ./services/plan-ign-raster
+    environment:
+      CACHE_ROOT: /var/cache/digues-app/basemaps
+      BASEMAP_CATALOG_FILE: /srv/plan-ign-raster/basemaps.toml
+      CARTOGRAPHIC_CACHE_PRODUCTS_FILE: /srv/plan-ign-raster/cartographic_caches.json
+      CACHE_GENERATION: ${BASEMAP_CACHE_GENERATION:-2026-09}
+    volumes:
+      - basemap-cache:/var/cache/digues-app/basemaps
+      - ./webapp/backend/digues_webapp/basemaps.toml:/srv/plan-ign-raster/basemaps.toml:ro
+      - ./webapp/backend/digues_webapp/cartographic_caches.json:/srv/plan-ign-raster/cartographic_caches.json:ro
+    stop_grace_period: 90s
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "127.0.0.1:${GEMAPI_PORT:-8080}:8080"
+    depends_on:
+      - app
+      - basemap
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+
+volumes:
+  media:
+  basemap-cache:

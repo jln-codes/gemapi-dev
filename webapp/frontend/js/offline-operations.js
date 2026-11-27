@@ -19,7 +19,7 @@
   let timer, ticking = false, wakeRequested = false, stopped = false;
   const reconnect = event => {
     const runtime = root.BusinessRuntime;
-    const key = runtime ? (runtime.legacy ? "legacy" : runtime.context?.key) : null;
+    const key = runtime?.context?.key || null;
     if (runtime && (!runtime.isActive() || event.detail?.contextKey !== key
         || event.detail?.generation !== runtime.generation())) return;
     clearTimeout(timer); void tick();

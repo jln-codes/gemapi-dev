@@ -22,9 +22,9 @@
   </head>
   <body class="map-page" data-interface="map">
     <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false"><symbol id="gps-location-icon" viewBox="0 0 24 24"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 18l-2 -4l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5l-2.901 8.034" /><path d="M21.121 20.121a3 3 0 1 0 -4.242 0c.418 .419 1.125 1.045 2.121 1.879c1.051 -.89 1.759 -1.516 2.121 -1.879" /><path d="M19 18v.01" /></symbol></svg>
-    <main hidden>
+    <main data-technical-shell>
       <header class="app-header" data-interface="map"></header>
-      <script type="application/x-business-script" data-business-src="/static/js/app-header.js"></script>
+      <script src="/static/js/app-header.js"></script>
       <div id="app-workspace" class="app-workspace">
         <aside id="heritage-panel" class="heritage-panel" hidden>
           <div class="heritage-title">
@@ -43,7 +43,7 @@
           </section>
         </aside>
         <section id="primary-area" class="primary-area" aria-label="Vue principale">
-          <div id="map" aria-label="Carte des tronçons et des désordres"></div>
+          <div id="map" aria-label="Carte"></div>
           <div class="map-crosshair" aria-hidden="true"></div>
           <div
             id="editor-map-interaction"
@@ -62,7 +62,7 @@
           </div>
           <div class="map-bottom-controls" aria-label="Contrôles cartographiques">
           <div class="map-bottom-layout">
-          <div id="map-legend" class="legend" aria-label="Légende">
+          <div id="map-legend" hidden class="legend" aria-label="Légende">
             <div id="legend-business-layers" class="legend-business-group">
             <label data-legend-category="troncons"><input type="checkbox" data-layer-toggle="troncons" checked><i class="line troncon"></i>Tronçons</label>
             <div class="legend-disorders-group">
@@ -131,7 +131,7 @@
             >
           </div>
           <div class="map-action-buttons">
-            <button id="open-directions" class="map-directions-button" type="button"
+            <button id="open-directions" hidden class="map-directions-button" type="button"
               title="Ouvrir Waze vers le centre de la carte" aria-label="Ouvrir Waze vers le centre de la carte" hidden>
               <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"
                 viewBox="0 0 24 24" fill="none" stroke="#607d8b" stroke-width="1"
@@ -266,7 +266,7 @@
             <h2>Fond cartographique</h2>
             <div id="basemap-selector" class="basemap-selector"></div>
           </section>
-          <form id="pwa-settings-form" class="pwa-settings-form">
+          <form id="pwa-settings-form" hidden class="pwa-settings-form">
             <section aria-labelledby="pwa-tracking-settings-title">
               <h2 id="pwa-tracking-settings-title">Géolocalisation et suivi GPS</h2>
               <label for="pwa-distance-meters">Distance minimale entre points (m)</label>
@@ -502,17 +502,17 @@
     <script src="/static/vendor/jspdf/jspdf.umd.min.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/inter-page-bus.js" data-source="map"></script>
     <script type="application/x-business-script" data-business-src="/static/js/map-print.js"></script>
-    <script type="application/x-business-script" data-business-src="/static/js/basemap.js"></script>
+    <script src="/static/js/basemap.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/offline-basemap-store.js"></script>
     <script type="application/x-business-script" data-business-src="/static/vendor/proj4/proj4.js"></script>
     <script type="application/x-business-script" data-business-src="/static/vendor/geotiff/geotiff.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/lidar-prototype-core.js"></script>
-    <script type="application/x-business-script" data-business-src="/static/js/leaflet-layer-order.js"></script>
+    <script src="/static/js/leaflet-layer-order.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/lidar-canvas.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/lidar-map.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/offline-basemap-download.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/offline-basemap-ui.js"></script>
-    <script type="application/x-business-script" data-business-src="/static/js/basemap-selector.js"></script>
+    <script src="/static/js/basemap-selector.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/top-navigation.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/help-panel.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/reference-data.js"></script>
@@ -548,12 +548,12 @@
     <script type="application/x-business-script" data-business-src="/static/js/observation-form.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/observation-detail.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/observation-parent-list.js"></script>
-    <script type="application/x-business-script" data-business-src="/static/js/pwa-geolocation.js"></script>
-    <script type="application/x-business-script" data-business-src="/static/js/pwa-settings.js"></script>
+    <script src="/static/js/pwa-geolocation.js"></script>
+    <script src="/static/js/pwa-settings.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/pwa-geometry.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/pwa-geometry-drafts.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/pwa-geometry-tracking.js"></script>
-    <script type="application/x-business-script" data-business-src="/static/js/pwa-map-position.js"></script>
+    <script src="/static/js/pwa-map-position.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/pwa-position-candidate.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/disorder-reports.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/mobilier-form.js"></script>
@@ -582,9 +582,7 @@
     <script type="application/x-business-script" data-business-src="/static/js/amenagement-hydraulique-editor.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/zone-stockage-editor.js"></script>
     <script type="application/x-business-script" data-business-src="/static/js/prestation-editor.js"></script>
-    <script type="application/x-business-script" data-business-src="/static/js/pwa.js"></script>
-    <script src="/static/js/business-context.js"></script>
-    <script src="/static/js/database-access.js"></script>
-    <script src="/static/js/business-bootstrap.js"></script>
+    <script src="/static/js/pwa.js"></script>
+    <script src="/static/js/technical-shell.js"></script>
   </body>
 </html>

@@ -466,13 +466,12 @@ def implicit_calculation(connection,identifier,command):
         'abscisse_m':row[3]*row[1],'longueur_m':row[1],'distance_axe_m':row[5],'geometry':row[6],'srid':srid}
 
 
-def register_routes(app, *, contextual=False):
-    from .media_target import media_route_dependencies
-    prefix='/api/bases/{business_database_id}' if contextual else '/api'
-    _,read=media_route_dependencies(contextual,'business.read')
-    _,write=media_route_dependencies(contextual,'business.update',write=True)
+def register_routes(app):
+    from .database import get_connection, get_write_connection
+    read = get_connection
+    write = get_write_connection
 
-    @app.get(prefix+'/troncons/{troncon_id}/reperage')
+    @app.get('/api/troncons/{troncon_id}/reperage')
     def get(troncon_id:UUID,connection=Depends(read)):
         state=read_state(connection,troncon_id)
         # C5 must present affected localisations before a sensitive edit.
@@ -489,13 +488,13 @@ def register_routes(app, *, contextual=False):
         state['localisations_dependantes']=dependents(connection,systems,bornes,links)
         return state
 
-    @app.put(prefix+'/troncons/{troncon_id}/reperage')
+    @app.put('/api/troncons/{troncon_id}/reperage')
     def put(troncon_id:UUID,command:ReperageUpdate,if_match:str|None=Header(default=None),
             operation_id:str|None=Header(default=None,alias='Operation-Id'),origin=Depends(mutation_origin),connection=Depends(write)):
         return execute_mutation(connection,'troncons','update',lambda:write_state(connection,troncon_id,command),
             identifier=troncon_id,if_match=if_match,operation_id=operation_id,
             changes=command.model_dump(mode='json',exclude_unset=True),origin=origin)
 
-    @app.post(prefix+'/troncons/{troncon_id}/reperage/calcul')
+    @app.post('/api/troncons/{troncon_id}/reperage/calcul')
     def conversion(troncon_id:UUID,command:Calculation,connection=Depends(read)):
         return calculate(connection,troncon_id,command)

@@ -5,12 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "digues-webapp"
 version = "0.1.0"
-description = "Application web pour digues.app"
+description = "Socle web gemapi.dev"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "digues-app==0.1.0",
-    "argon2-cffi==25.1.0",
     "fastapi>=0.115,<1",
     "httpx==0.28.1",
     "matplotlib>=3.8,<4",
@@ -25,13 +24,9 @@ dependencies = [
     "Pillow>=12.1,<13",
 ]
 
-[project.scripts]
-digues-webapp-clean-media = "digues_webapp.media_storage:main"
-digues-webapp-index-knowledge = "digues_webapp.knowledge.indexer:main"
-
 [project.optional-dependencies]
 test = ["setuptools>=68", "wheel>=0.42,<1"]
 
 [tool.setuptools.package-data]
-digues_webapp = ["admin_assets/*.html", "admin_assets/*.js", "admin_assets/*.css", "basemaps.toml", "cartographic_caches.json", "lidar_prototype.html"]
+digues_webapp = ["basemaps.toml", "cartographic_caches.json", "lidar_prototype.html"]
 "digues_webapp.frontend_assets" = ["**/*"]

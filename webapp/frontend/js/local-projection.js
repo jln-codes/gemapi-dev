@@ -263,7 +263,7 @@
   }
   function createStore({ indexedDB: suppliedIndexedDB, name = globalThis.BusinessRuntime?.databaseName || "digues-app-field-projection" } = {}) {
     const runtime = globalThis.BusinessRuntime;
-    if (runtime && !runtime.legacy && name !== runtime.databaseName) throw new Error('Stockage étranger au contexte navigateur.');
+    if (runtime && name !== runtime.databaseName) throw new Error('Stockage étranger au contexte navigateur.');
     const contextKey = runtime?.context?.key || null;
     function bindOperation(operation) {
       if (contextKey) operation.contextKey = contextKey;

@@ -115,67 +115,62 @@ def _catalog_pdf(connection: Any, catalog: Any, *, context=None) -> Response:
     return Response(content=content, media_type="application/pdf", headers=headers)
 
 
-def register_routes(application, *, contextual=False) -> None:
-    from .media_target import media_route_dependencies
-    _, read_connection = media_route_dependencies(contextual, 'business.read')
-    export_context, export_connection = media_route_dependencies(contextual, 'exports.read')
-    prefix = '/api/bases/{business_database_id}' if contextual else '/api'
-    @application.get(prefix + "/amenagements-hydrauliques/{amenagement_id}/desordres/catalogue")
+def register_routes(application) -> None:
+    from .database import get_connection, get_write_connection
+    read_connection = get_connection
+    export_connection = get_connection
+    @application.get("/api/amenagements-hydrauliques/{amenagement_id}/desordres/catalogue")
     def amenagement_catalogue(
         amenagement_id: UUID,
         connection: Any = Depends(read_connection),
     ) -> dict[str, Any]:
         return _serialize(_load_catalog(connection, "amenagement_hydraulique", amenagement_id))
 
-    @application.get(prefix + "/amenagements-hydrauliques/{amenagement_id}/desordres/catalogue/pdf")
+    @application.get("/api/amenagements-hydrauliques/{amenagement_id}/desordres/catalogue/pdf")
     def amenagement_catalogue_pdf(
         amenagement_id: UUID,
         connection: Any = Depends(export_connection),
-        context=Depends(export_context),
     ) -> Response:
-        return _catalog_pdf(connection, _load_catalog(connection, "amenagement_hydraulique", amenagement_id), context=context)
+        return _catalog_pdf(connection, _load_catalog(connection, "amenagement_hydraulique", amenagement_id))
 
-    @application.get(prefix + "/systemes-endiguement/{systeme_id}/desordres/catalogue")
+    @application.get("/api/systemes-endiguement/{systeme_id}/desordres/catalogue")
     def systeme_catalogue(
         systeme_id: UUID,
         connection: Any = Depends(read_connection),
     ) -> dict[str, Any]:
         return _serialize(_load_catalog(connection, "systeme", systeme_id))
 
-    @application.get(prefix + "/systemes-endiguement/{systeme_id}/desordres/catalogue/pdf")
+    @application.get("/api/systemes-endiguement/{systeme_id}/desordres/catalogue/pdf")
     def systeme_catalogue_pdf(
         systeme_id: UUID,
         connection: Any = Depends(export_connection),
-        context=Depends(export_context),
     ) -> Response:
-        return _catalog_pdf(connection, _load_catalog(connection, "systeme", systeme_id), context=context)
+        return _catalog_pdf(connection, _load_catalog(connection, "systeme", systeme_id))
 
-    @application.get(prefix + "/digues/{digue_id}/desordres/catalogue")
+    @application.get("/api/digues/{digue_id}/desordres/catalogue")
     def digue_catalogue(
         digue_id: UUID,
         connection: Any = Depends(read_connection),
     ) -> dict[str, Any]:
         return _serialize(_load_catalog(connection, "digue", digue_id))
 
-    @application.get(prefix + "/digues/{digue_id}/desordres/catalogue/pdf")
+    @application.get("/api/digues/{digue_id}/desordres/catalogue/pdf")
     def digue_catalogue_pdf(
         digue_id: UUID,
         connection: Any = Depends(export_connection),
-        context=Depends(export_context),
     ) -> Response:
-        return _catalog_pdf(connection, _load_catalog(connection, "digue", digue_id), context=context)
+        return _catalog_pdf(connection, _load_catalog(connection, "digue", digue_id))
 
-    @application.get(prefix + "/troncons/{troncon_id}/desordres/catalogue")
+    @application.get("/api/troncons/{troncon_id}/desordres/catalogue")
     def troncon_catalogue(
         troncon_id: UUID,
         connection: Any = Depends(read_connection),
     ) -> dict[str, Any]:
         return _serialize(_load_catalog(connection, "troncon", troncon_id))
 
-    @application.get(prefix + "/troncons/{troncon_id}/desordres/catalogue/pdf")
+    @application.get("/api/troncons/{troncon_id}/desordres/catalogue/pdf")
     def troncon_catalogue_pdf(
         troncon_id: UUID,
         connection: Any = Depends(export_connection),
-        context=Depends(export_context),
     ) -> Response:
-        return _catalog_pdf(connection, _load_catalog(connection, "troncon", troncon_id), context=context)
+        return _catalog_pdf(connection, _load_catalog(connection, "troncon", troncon_id))

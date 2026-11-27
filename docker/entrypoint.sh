@@ -1,5 +1,5 @@
 #!/bin/sh
-# Entrypoint de l'image digues-app.
+# Entrypoint de l’image gemapi.dev.
 #
 # Le conteneur peut démarrer en root uniquement pour préparer le répertoire des
 # médias : un volume nommé neuf appartient à root, quel que soit le

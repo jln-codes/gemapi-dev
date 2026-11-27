@@ -11,8 +11,6 @@ from urllib.request import ProxyHandler, Request as UrlRequest, build_opener
 
 from fastapi import Depends, HTTPException
 
-from .admin_frontend import require_admin_host
-from .auth import require_superadmin
 
 def renderer_call(method: str, route: str, actor: str, body: dict | None = None) -> dict:
     base = os.getenv("BASEMAP_ADMIN_URL", "").rstrip("/")
@@ -45,10 +43,10 @@ def renderer_call(method: str, route: str, actor: str, body: dict | None = None)
         raise HTTPException(503, "Renderer cartographique indisponible.") from None
 
 
-def register_routes(app):
-    read = [Depends(require_admin_host), Depends(require_superadmin)]
+def register_routes(app, *, require_operator):
+    read = [Depends(require_operator)]
 
     @app.get('/api/admin/basemap-caches', dependencies=read)
-    async def get_basemap_caches(user=Depends(require_superadmin)):
+    async def get_basemap_caches(user=Depends(require_operator)):
         status = await asyncio.to_thread(renderer_call, 'GET', '/internal/cache-admin', str(user.id))
         return {'status': status}

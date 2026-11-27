@@ -4722,3 +4722,11 @@ body:not(.show-uuid) .base-detail .disorder-related-object-id { display: none; }
     display: flex;
   }
 }
+
+/* Protected views are dormant while instance identity is being decided. */
+[data-technical-shell] [hidden] {
+  display: none !important;
+}
+.technical-access-status {
+  margin: 1rem;
+}

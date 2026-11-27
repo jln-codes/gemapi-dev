@@ -98,16 +98,6 @@ def lock_seuil_plan(connection, plan_id):
 
 def get_media_storage(required=True, *, context=None) -> MediaStorage | None:
     """Resolve an authorized web target; there is no implicit legacy fallback."""
-    if context is None and os.getenv("LEGACY_SINGLE_DATABASE_ENABLED", "false") != "true":
-        if not required:
-            return None
-        fail(503, "media-target-required", "Une base métier explicite est requise.")
-    if context is not None:
-        from .business_context import BusinessContext
-        from .media_target import MediaMaintenanceTarget
-
-        if not isinstance(context, (BusinessContext, MediaMaintenanceTarget)):
-            raise TypeError("Expected an authorized server media target")
     root = os.getenv("MEDIA_ROOT")
     backend = os.getenv("MEDIA_BACKEND", "disabled")
     if backend == "disabled" or not root:
@@ -121,12 +111,6 @@ def get_media_storage(required=True, *, context=None) -> MediaStorage | None:
             "Le backend média configuré n’est pas disponible.",
         )
     try:
-        if context is not None:
-            return FilesystemMediaStorage(
-                Path(root) / str(UUID(str(context.business_database_id))),
-                business_database_id=context.business_database_id,
-                media_namespace=context.media_namespace,
-            )
         return FilesystemMediaStorage(root)
     except (OSError, ValueError):
         fail(
@@ -189,34 +173,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Supprime les préparations expirées non référencées (jamais les Photos)."
     )
-    parser.add_argument("--business-database-id", type=UUID)
-    args = parser.parse_args()
-    mode = os.getenv("LEGACY_SINGLE_DATABASE_ENABLED", "false")
-    if mode not in {"true", "false"}:
-        parser.error("LEGACY_SINGLE_DATABASE_ENABLED doit valoir true ou false.")
-    legacy = mode == "true"
-    if legacy == (args.business_database_id is not None):
-        parser.error(
-            "Mode multi-base : --business-database-id obligatoire ; mode legacy : cible interdite."
-        )
-    from .media_target import resolve_media_maintenance_target
-
-    context = (
-        resolve_media_maintenance_target(args.business_database_id) if not legacy else None
-    )
+    parser.parse_args()
     from .database import open_write_connection
 
-    with open_write_connection(context) as connection:
-        print(
-            json.dumps(
-                clean_prepared(
-                    connection,
-                    get_media_storage(context=context),
-                    context=context,
-                )
-            )
-        )
-
-
-if __name__ == "__main__":
-    main()
+    with open_write_connection() as connection:
+        print(json.dumps(clean_prepared(connection, get_media_storage())))

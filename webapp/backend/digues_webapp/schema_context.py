@@ -10,7 +10,7 @@ from time import monotonic
 from typing import Any
 
 from .database import open_ai_connection
-from digues_app.control.ai_policy import AI_POLICY_VERSION, AI_SCHEMA_OBJECTS, AI_SELECT_COLUMNS
+from .ai_sql_policy import AI_POLICY_VERSION, AI_SCHEMA_OBJECTS, AI_SELECT_COLUMNS
 
 
 LOGGER = logging.getLogger(__name__)
