@@ -161,6 +161,11 @@ export function createRequestHandler(tileService, { logger = console, wmtsServic
       return;
     }
 
+    if (pathname === '/live') {
+      send(res, 200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }, 'ok\n');
+      return;
+    }
+
     if (pathname === '/health') {
       const stats = tileService.renderer?.stats?.();
       const healthy = tileService.isHealthy ?? !tileService.closing;
@@ -230,6 +235,11 @@ export function createRequestHandler(tileService, { logger = console, wmtsServic
       if (!parsed) {
         send(res, 400, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
           'Invalid XYZ tile\n');
+        return;
+      }
+      if (!tileService.renderer) {
+        send(res, 503, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+          'PLAN.IGN renderer unavailable\n');
         return;
       }
       if (parsed.version !== tileService.renderer.cacheVersion) {
@@ -316,38 +326,55 @@ async function main() {
   const epure = caches.get('ign-epure');
   if (!epure?.resources) throw new Error('Missing operational ign-epure cache policy');
   console.log(`CACHE_STATS ${JSON.stringify(await cacheStats(caches))}`);
-  const { createNativeRenderer } = await import('./native-renderer.mjs');
-  const renderer = await createNativeRenderer({ cacheRoot, generation,
-    resourceStore: epure.resources, retainOnError: epure.policy.retain_on_error });
-  epure.tiles.activeGeneration = renderer.cacheVersion;
-  const rasterCache = new RasterCache(cacheRoot, renderer.cacheVersion, { store: epure.tiles });
-  const tileService = new PlanIgnTileService({ cacheRoot, renderer, cache: rasterCache,
-    httpMaxAgeSeconds: epure.policy.http_max_age_seconds });
-  const server = http.createServer(createRequestHandler(tileService, { wmtsServices,
-    cacheSettings, adminToken: process.env.BASEMAP_ADMIN_TOKEN,
-    lidarDistribution, lidarInternalToken: process.env.LIDAR_INTERNAL_TOKEN }));
+  const handlerOptions = { wmtsServices, cacheSettings, adminToken: process.env.BASEMAP_ADMIN_TOKEN,
+    lidarDistribution, lidarInternalToken: process.env.LIDAR_INTERNAL_TOKEN };
+  let handleRequest = createRequestHandler({ isHealthy: false }, handlerOptions);
+  const server = http.createServer((request, response) => handleRequest(request, response));
   try {
     await listen(server, { host, port });
   } catch (error) {
-    await tileService.close();
     await Promise.all([...wmtsServices.values()].map((service) => service.close()));
     throw error;
   }
-  console.log(`PLAN.IGN raster service listening on http://${host}:${port}`);
-  console.log(`Raster cache: ${path.join(cacheRoot, 'ign', 'epure', renderer.cacheVersion)}`);
+  console.log(`Cartographic service listening on http://${host}:${port}`);
+
+  let tileService;
+  let initialization;
+  let retryTimer;
+  let shuttingDown = false;
+  const initializeEpure = async () => {
+    try {
+      const { createNativeRenderer } = await import('./native-renderer.mjs');
+      const renderer = await createNativeRenderer({ cacheRoot, generation,
+        resourceStore: epure.resources, retainOnError: epure.policy.retain_on_error });
+      epure.tiles.activeGeneration = renderer.cacheVersion;
+      const rasterCache = new RasterCache(cacheRoot, renderer.cacheVersion, { store: epure.tiles });
+      tileService = new PlanIgnTileService({ cacheRoot, renderer, cache: rasterCache,
+        httpMaxAgeSeconds: epure.policy.http_max_age_seconds });
+      if (!shuttingDown) handleRequest = createRequestHandler(tileService, handlerOptions);
+      console.log(`Raster cache: ${path.join(cacheRoot, 'ign', 'epure', renderer.cacheVersion)}`);
+    } catch (error) {
+      console.error(`ERROR IGN Épuré unavailable: ${error.message}`);
+      if (!shuttingDown) retryTimer = setTimeout(startEpure, 30_000);
+    }
+  };
+  function startEpure() {
+    initialization = initializeEpure();
+  }
+  startEpure();
   const statsTimer = setInterval(() => {
     void cacheStats(caches).then((stats) => console.log(`CACHE_STATS ${JSON.stringify(stats)}`))
       .catch((error) => console.error(`ERROR cache statistics ${error.message}`));
   }, 60_000);
   statsTimer.unref();
 
-  let shuttingDown = false;
   const shutdown = async (signal) => {
     if (shuttingDown) return;
     shuttingDown = true;
     clearInterval(statsTimer);
+    clearTimeout(retryTimer);
     console.log(`Shutting down after ${signal}`);
-    tileService.closing = true;
+    if (tileService) tileService.closing = true;
     const deadline = setTimeout(() => {
       console.error(`ERROR shutdown exceeded ${SHUTDOWN_DEADLINE_MS} ms`);
       process.exit(1);
@@ -358,7 +385,8 @@ async function main() {
       console.error(`ERROR shutdown ${error.message}`);
       process.exitCode = 1;
     } finally {
-      await tileService.close().catch((error) => {
+      await initialization;
+      await tileService?.close().catch((error) => {
         console.error(`ERROR release ${error.message}`);
         // The owner process is the isolation boundary for a stuck Native Map.
         // Never replace/release it concurrently with a still-running C++ job.

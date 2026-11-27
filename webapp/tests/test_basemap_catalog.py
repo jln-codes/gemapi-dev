@@ -56,18 +56,16 @@ def definition(identifier: str, order: int, **changes):
 
 
 class BasemapCatalogTest(unittest.TestCase):
-    def test_catalogue_is_public_configuration_in_multibase_and_legacy_modes(self):
-        for legacy in ('false', 'true'):
-            with self.subTest(legacy=legacy), patch.dict('os.environ',
-                    LEGACY_SINGLE_DATABASE_ENABLED=legacy), TestClient(create_app()) as client:
-                response = client.get('/api/basemaps')
-                self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.headers['cache-control'], 'no-store')
-                self.assertEqual([row['id'] for row in response.json()['basemaps']],
-                                 ['ign-epure', 'ign-plan', 'ign-ortho'])
-                # The exception is exact: it cannot expose an unscoped business API.
-                if legacy == 'false':
-                    self.assertEqual(client.get('/api/desordres').status_code, 404)
+    def test_catalogue_is_public_and_independent_of_browser_selection(self):
+        with TestClient(create_app()) as client:
+            response = client.get('/api/basemaps?base=autre')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.headers['cache-control'], 'no-store')
+            self.assertEqual(response.json(), client.get('/api/basemaps').json())
+            self.assertEqual([row['id'] for row in response.json()['basemaps']],
+                             ['ign-epure', 'ign-plan', 'ign-ortho'])
+            self.assertEqual(client.get('/api/desordres').status_code, 403)
+            self.assertEqual(client.get('/api/bases/autre/desordres').status_code, 404)
 
     def test_default_catalog_declares_three_independent_basemaps(self):
         catalog = load_basemap_catalog()

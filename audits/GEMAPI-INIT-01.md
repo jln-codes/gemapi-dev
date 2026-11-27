@@ -7,3 +7,6 @@ Source validée et lue dans l’arbre Git de `jln-codes/digues-app` à `eecec0a4
 La sélection porte sur les fichiers suivis de la révision validée. Les chemins `private/`, la démo Digues, les photos et contours, le modèle compilé, les DDL, les sources CouchDB, le migrateur et ses scripts dédiés sont exclus. Le GeoTIFF miniature du renderer sert exclusivement à son test de décodage. Les deux JPEG locaux sont exclus du suivi. `branding/` reste intact.
 
 Le test Node d’ordre des plans Leaflet passe. La construction du renderer et les tests intégrés sont poursuivis en 04. Les tests historiques dépendant de l’identité Digues ou de son modèle sont des témoins à adapter. À ce stade, les routes héritées ne sont pas lancées.
+
+La note de licence de Leaflet.Editable figure dans le projet amont.
+[Leaflet.Editable](https://github.com/Leaflet/Leaflet.Editable#licence)

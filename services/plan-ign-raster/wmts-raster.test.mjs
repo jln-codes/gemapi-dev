@@ -82,6 +82,21 @@ test('two bases reuse each global Plan and Ortho tile without a second acquisiti
   }
   assert.equal((await request(ctx.handler, '/internal/basemaps/v1/ign-plan.json')).status,404);
 });
+test('WMTS et vivacité restent disponibles pendant une panne au démarrage d’Épuré', async t => {
+  const ctx = await context(t);
+  const handle = createRequestHandler({ isHealthy: false }, { wmtsServices: ctx.services, logger: quiet });
+  assert.equal((await request(handle, '/live')).status, 200);
+  assert.equal((await request(handle, '/health')).status, 503);
+  assert.equal((await request(handle, '/basemap/plan-ign.json')).status, 503);
+  assert.equal((await request(handle, '/basemap/tiles/v1/0/0/0.webp')).status, 503);
+  assert.equal((await request(handle, '/basemap/ign-plan.json')).status, 200);
+  const service = ctx.services.get('ign-plan');
+  service.timeoutMs = 5000;
+  const tile = await request(handle, url(service, 0, 0, 0));
+  assert.equal(tile.status, 200);
+  assert.deepEqual(tile.body, ctx.png);
+});
+
 test('different global WMTS tiles acquire concurrently and identical requests join', async t => {
   const ctx=await context(t), entered=deferred(), release=deferred();
   let calls=0;

@@ -201,6 +201,7 @@
     close.className = "backend-status-close icon-button";
     close.setAttribute("aria-label", "Fermer le message");
     close.textContent = "×";
+    panel.hidden = !status.textContent.trim();
     panel.append(status, close);
     notifications.append(panel);
     header.after(notifications);
@@ -295,10 +296,6 @@
 
   function createController({ header, interfaceType, windowTarget, documentTarget }) {
     if (!header || !INTERFACES.has(interfaceType)) throw new TypeError("Header invalide");
-    // Administration has no business switch, field tools, PWA or data redirect.
-    if (interfaceType === "admin") {
-      return { capabilities: () => capabilities({ interfaceType, width: 0, standalone: false }) };
-    }
     const switchToggle = header.querySelector(".view-toggle");
     const interInterfacePreferences = [
       ...header.querySelectorAll('[data-capability="inter-interface-preferences"]'),
@@ -324,21 +321,21 @@
       positionSettings();
     }
     if (urlModeSelect) {
-    urlModeSelect.closest("label").hidden = !runtime;
-    urlModeStatus.hidden = !runtime;
-    urlModeSelect.value = runtime?.urlMode?.() || "position";
-    urlModeSelect.addEventListener("change", () => {
-      try {
-        runtime.setUrlMode(urlModeSelect.value);
-        urlModeStatus.textContent = "";
-      } catch (_) {
-        urlModeSelect.value = runtime?.urlMode?.() || "position";
-        urlModeStatus.textContent = "Préférence non enregistrée : stockage local indisponible.";
-      }
-    });
-    windowTarget.addEventListener("storage", event => {
-      if (event.key === runtime?.urlModeKey) urlModeSelect.value = runtime.urlMode();
-    });
+      urlModeSelect.closest("label").hidden = !runtime;
+      urlModeStatus.hidden = !runtime;
+      urlModeSelect.value = runtime?.urlMode?.() || "position";
+      urlModeSelect.addEventListener("change", () => {
+        try {
+          runtime.setUrlMode(urlModeSelect.value);
+          urlModeStatus.textContent = "";
+        } catch (_) {
+          urlModeSelect.value = runtime?.urlMode?.() || "position";
+          urlModeStatus.textContent = "Préférence non enregistrée : stockage local indisponible.";
+        }
+      });
+      windowTarget.addEventListener("storage", event => {
+        if (event.key === runtime?.urlModeKey) urlModeSelect.value = runtime.urlMode();
+      });
     }
     const viewport = header.querySelector(".app-navigation-viewport");
     const networkButton = header.querySelector("#network-status");

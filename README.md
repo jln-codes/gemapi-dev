@@ -10,11 +10,17 @@ reste fermé pendant la définition du schéma et de l’authentification.
 docker compose up --build
 ```
 
+L’image FastAPI utilise Python et GDAL de Debian trixie dans un environnement
+virtuel dédié à l’application.
+
 Ouvrir http://127.0.0.1:8080/carte ou http://127.0.0.1:8080/base. Pour un autre
 port local, renseigner `GEMAPI_PORT`. Le proxy publie seulement sur la boucle
 locale. Le renderer et FastAPI restent sur le réseau Compose. Les fonds IGN
 nécessitent un accès aux services cartographiques publics. Le sélecteur signale
-l’indisponibilité d’un fond et dispose du repli OpenStreetMap.
+l’indisponibilité d’un fond et dispose du repli OpenStreetMap. Dans le réseau
+Compose, le renderer distingue la vivacité (`/live`) de la disponibilité du
+moteur Épuré (`/health`). Les catalogues WMTS restent consultables pendant
+une panne d’Épuré.
 
 Le socle démarre sans PostgreSQL. Pour le futur raccordement, le service
 accepte `DATABASE_URL` dans sa configuration privée. Les DSN facultatifs

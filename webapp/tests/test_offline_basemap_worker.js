@@ -11,7 +11,7 @@ const ID = "11111111-1111-4111-8111-111111111111";
 function worker({ context = "context-A", available = true, revokeDuringRead = false } = {}) {
   const handlers = new Map();
   let networkCalls = 0;
-  const names = new Set(["digues-shell-old", "digues-shell-v1", "digues-basemap-package-" + ID]);
+  const names = new Set(["gemapi-shell-old", "gemapi-shell-v1", "digues-basemap-package-" + ID]);
   const caches = { async keys() { return [...names]; }, async delete(name) { return names.delete(name); } };
   const self = { location: { href: "https://app.test/service-worker.js?v=v1", origin: "https://app.test" },
     clients: { async claim() {}, async get() { return { postMessage(_message, ports) {
@@ -59,8 +59,8 @@ test("malformed paths, query strings and wrong context are rejected locally", as
 test("service worker update deletes old shell versions but preserves local basemap packages", async () => {
   const runtime = worker();
   await runtime.activate();
-  assert.equal(runtime.names.has("digues-shell-old"), false);
-  assert.equal(runtime.names.has("digues-shell-v1"), true);
+  assert.equal(runtime.names.has("gemapi-shell-old"), false);
+  assert.equal(runtime.names.has("gemapi-shell-v1"), true);
   assert.equal(runtime.names.has("digues-basemap-package-" + ID), true);
 });
 

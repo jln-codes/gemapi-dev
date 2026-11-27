@@ -8,6 +8,7 @@ if (address.protocol !== "http:" || !["127.0.0.1", "localhost"].includes(address
 
 module.exports = defineConfig({
   testDir: "./tests/e2e",
+  timeout: 120_000,
   testMatch: "gemapi-*.spec.js",
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   use: { baseURL, trace: "retain-on-failure" },

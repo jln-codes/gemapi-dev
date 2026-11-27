@@ -4323,8 +4323,12 @@ body:not(.show-uuid) .base-detail .disorder-related-object-id { display: none; }
     padding-inline: 0;
   }
 
-  .app-brand {
+  main:not([data-technical-shell]) .app-brand {
     display: none;
+  }
+
+  [data-technical-shell] .app-brand {
+    padding-inline: 0.375rem;
   }
 
   .header-navigation {
@@ -4724,13 +4728,13 @@ body:not(.show-uuid) .base-detail .disorder-related-object-id { display: none; }
 }
 
 /* Protected views are dormant while instance identity is being decided. */
+[data-technical-shell] #locate-map:not([hidden]) {
+  display: flex;
+}
+
 [data-technical-shell] [hidden] {
   display: none !important;
 }
-.technical-access-status {
-  margin: 1rem;
-}
-
 .app-brand img {
   display: block;
   width: clamp(5.5rem, 12vw, 8rem);

@@ -8,8 +8,8 @@ import unittest
 from unittest.mock import patch
 
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
 
-from digues_app.crs import EPSG_3950
 from digues_webapp.app import (
     APP_VERSION,
     BUILD_ID,
@@ -24,26 +24,20 @@ def route_endpoint(path: str):
 
 
 class PwaBackendTest(unittest.TestCase):
-    def test_lidar_ui_requires_dev_opt_in_and_internal_distribution_token(self):
-        config = route_endpoint("/api/config")
-        for variables, expected in (
-            ({"DIGUES_ENVIRONMENT": "production", "LIDAR_PROTOTYPE_ENABLED": "1",
-              "LIDAR_INTERNAL_TOKEN": "test-token"}, False),
-            ({"DIGUES_ENVIRONMENT": "test", "LIDAR_PROTOTYPE_ENABLED": "0",
-              "LIDAR_INTERNAL_TOKEN": "test-token"}, False),
-            ({"DIGUES_ENVIRONMENT": "test", "LIDAR_PROTOTYPE_ENABLED": "1",
-              "LIDAR_INTERNAL_TOKEN": ""}, False),
-            ({"DIGUES_ENVIRONMENT": "test", "LIDAR_PROTOTYPE_ENABLED": "1",
-              "LIDAR_INTERNAL_TOKEN": "test-token"}, True),
-        ):
-            with self.subTest(variables=variables), patch.dict("os.environ", variables), \
-                    patch("digues_webapp.app.frontend_photo_quality_policy", return_value={}):
-                self.assertEqual(json.loads(config().body)["lidar_ui_enabled"], expected)
+    def test_dev_prototype_does_not_open_protected_distribution(self):
+        with patch.dict("os.environ", {
+            "DIGUES_ENVIRONMENT": "test",
+            "LIDAR_PROTOTYPE_ENABLED": "1",
+            "LIDAR_INTERNAL_TOKEN": "synthetic-token-for-qualification",
+        }), TestClient(app) as client:
+            self.assertEqual(client.get("/dev/lidar").status_code, 200)
+            self.assertEqual(client.get("/api/lidar/policy").status_code, 403)
+            self.assertEqual(client.post("/api/lidar/blocks/v1/read").status_code, 403)
 
     def test_manifest_is_served_with_manifest_media_type(self):
-        response = route_endpoint("/manifest.webmanifest")()
+        response = route_endpoint("/branding/site.webmanifest")()
         self.assertEqual(response.media_type, "application/manifest+json")
-        self.assertEqual(response.path, FRONTEND_DIRECTORY / "manifest.webmanifest")
+        self.assertEqual(response.path, FRONTEND_DIRECTORY / "branding" / "site.webmanifest")
 
     def test_service_worker_is_served_from_root_without_durable_http_cache(self):
         response = route_endpoint("/service-worker.js")()
@@ -61,54 +55,19 @@ class PwaBackendTest(unittest.TestCase):
             self.assertEqual(failure.exception.headers["Cache-Control"], "no-cache")
 
     def test_config_exposes_build_and_app_versions_without_cache(self):
-        policy = {"contract_version": 2, "parameters_version": 2,
-                  "profile": "standard", "policy_version": 1,
-                  "max_file_size_bytes": 1024 * 1024,
-                  "effective_parameters": {"max_long_edge_px": 1600,
-                                           "output_mime_type": "image/jpeg",
-                                           "encoder_quality": 0.78,
-                                           "min_long_edge_px": 960,
-                                           "min_encoder_quality": 0.46,
-                                           "encoder_quality_step": 0.08,
-                                           "dimension_scale_step": 0.8,
-                                           "max_file_size_bytes": 1024 * 1024}}
-        with patch("digues_webapp.app.frontend_photo_quality_policy", return_value=policy), patch.dict("os.environ", {
-            "DIGUES_WEB_SHOW_UUID": "true",
-            "BASEMAP_TILEJSON_URL": "https://example.test/france.json",
+        with patch.dict("os.environ", {
+            "BASEMAP_TILEJSON_URL": "https://example.test/internal.json",
+            "DATABASE_URL": "postgresql://example.invalid/fixture",
         }):
             response = route_endpoint("/api/config")()
-        content = json.loads(response.body)
-        self.assertTrue(content["show_uuid"])
-        self.assertEqual(content["basemap_tilejson_url"], "https://example.test/france.json")
-        self.assertEqual(content["basemap_catalog_url"], "/api/basemaps")
-        self.assertEqual(content["build_id"], BUILD_ID)
-        self.assertEqual(content["app_version"], APP_VERSION)
-        self.assertEqual(content["photo_quality_policy"], policy)
+        self.assertEqual(json.loads(response.body), {"build_id": BUILD_ID, "app_version": APP_VERSION})
         self.assertEqual(response.headers["cache-control"], "no-store")
 
-    def test_config_uses_no_tilejson_by_default_or_for_a_blank_value(self):
-        with patch("digues_webapp.app.frontend_photo_quality_policy", return_value={}), patch.dict("os.environ", {}, clear=True):
-            response = route_endpoint("/api/config")()
-        self.assertEqual(json.loads(response.body)["basemap_tilejson_url"], "")
-
-        with patch("digues_webapp.app.frontend_photo_quality_policy", return_value={}), patch.dict("os.environ", {"BASEMAP_TILEJSON_URL": "   "}, clear=True):
-            response = route_endpoint("/api/config")()
-        self.assertEqual(json.loads(response.body)["basemap_tilejson_url"], "")
-
-    def test_base_summary_exposes_the_active_projected_crs_only(self):
-        with patch("digues_webapp.app.read_business_crs", return_value=EPSG_3950):
-            summary = route_endpoint("/api/base-summary")(object())
-
-        self.assertEqual(summary, {
-            "crs": {
-                "authority": "EPSG",
-                "srid": 3950,
-                "code": "EPSG:3950",
-                "name": "RGF93 v1 / CC50",
-                "label": "RGF93 v1 / CC50 — EPSG:3950",
-            },
-        })
-        self.assertNotIn("4326", json.dumps(summary))
+    def test_base_summary_is_closed_before_identity(self):
+        with TestClient(app) as client:
+            response = client.get("/api/base-summary")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.headers["cache-control"], "no-store")
 
     def test_frontend_build_id_is_deterministic_and_path_sensitive(self):
         with (
@@ -208,7 +167,7 @@ class PwaFrontendContractTest(unittest.TestCase):
             shell_urls = set(re.findall(r'(?:src|href)="(/[^"]+)"', page))
             local_assets = {
                 url for url in shell_urls
-                if url.startswith("/static/") or url == "/manifest.webmanifest"
+                if url.startswith("/static/") or url.startswith("/branding/")
             }
             with self.subTest(page=page_name):
                 self.assertIn(f'"{route}"', self.service_worker)
@@ -266,8 +225,8 @@ class PwaFrontendContractTest(unittest.TestCase):
         self.assertIn('url.origin !== self.location.origin', self.service_worker)
 
     def test_shell_cache_is_versioned_and_cleanup_is_shell_only(self):
-        self.assertIn('`digues-shell-${buildId}`', self.service_worker)
-        self.assertIn('cacheName.startsWith("digues-shell-")', self.service_worker)
+        self.assertIn('`gemapi-shell-${buildId}`', self.service_worker)
+        self.assertIn('cacheName.startsWith("gemapi-shell-")', self.service_worker)
         self.assertIn('cacheName !== SHELL_CACHE', self.service_worker)
         self.assertNotIn('startsWith("digues-map-")', self.service_worker)
         self.assertNotIn('startsWith("digues-data-")', self.service_worker)
@@ -383,7 +342,7 @@ function createWorker(buildId) {
     v1.fetch("/carte", "navigate"), v1.fetch("/static/js/map.js"),
   ]);
   online = true;
-  stores.get("digues-shell-v1").delete("/static/js/map.js?v=v1");
+  stores.get("gemapi-shell-v1").delete("/static/js/map.js?v=v1");
   const missingOldAsset = await v1.fetch("/static/js/map.js");
   await v2.message({ type: "SKIP_WAITING" });
   await v2.activate();
@@ -400,7 +359,7 @@ function createWorker(buildId) {
     missingOldAsset: missingOldAsset.generation,
     afterAcceptance: afterAcceptance.map((response) => response.generation),
     cacheNames: await cachesApi.keys(),
-    v2CacheKeys: [...stores.get("digues-shell-v2").keys()],
+    v2CacheKeys: [...stores.get("gemapi-shell-v2").keys()],
     v2State: v2.state,
   }));
 })();
@@ -411,7 +370,7 @@ function createWorker(buildId) {
         self.assertEqual(result["offline"], ["v1", "v1"])
         self.assertEqual(result["missingOldAsset"], "v2")
         self.assertEqual(result["afterAcceptance"], ["v2"] * 5)
-        self.assertEqual(result["cacheNames"], ["digues-shell-v2"])
+        self.assertEqual(result["cacheNames"], ["gemapi-shell-v2"])
         self.assertTrue(result["v2CacheKeys"])
         self.assertTrue(all(
             key.endswith("?v=v2") for key in result["v2CacheKeys"]
@@ -487,7 +446,7 @@ setTimeout(() => {
         for visible_label in ("Créer", "Assistant IA"):
             self.assertIn(visible_label, header)
         self.assertIn('id="toggle-heritage"', header)
-        self.assertIn('canAccessData = interfaceType !== "admin" && !standalone && Number(width) >= DATA_MIN_WIDTH', header)
+        self.assertIn('canAccessData = !standalone && Number(width) >= DATA_MIN_WIDTH', header)
         self.assertIn('data-capability="desktop-map-tools"', header)
         self.assertIn('data-capability="field-map-tools"', header)
         self.assertIn('windowTarget.location.replace(windowTarget.BusinessRuntime?.pageUrl("/carte") || "/carte")', header)

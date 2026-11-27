@@ -18,18 +18,19 @@ function basemapWith(fetch, timers = {}) {
   return window.Basemap;
 }
 
-test("territorial TileJSON uses the tab runtime and preserves the scoped raster URL", async () => {
-  const base = '30000000-0000-4000-8000-000000000001';
-  let scoped = 0;
-  const basemap = basemapWith(async () => { throw new Error('Unscoped fetch forbidden'); }, {
-    businessRuntime: { async fetch(url) {
-      scoped++; assert.equal(url, `/api/bases/${base}/basemaps/ign-epure.json`);
-      return { ok: true, json: async () => ({ tiles: [
-        `/api/bases/${base}/basemaps/ign-epure/tiles/v1/{z}/{x}/{y}.webp`], minzoom: 0, maxzoom: 18 }) };
-    } },
+test("public TileJSON uses the instance proxy independently of a later identity", async () => {
+  let requests = 0;
+  const basemap = basemapWith(async url => {
+    requests++;
+    assert.equal(url, "/basemap/plan-ign.json");
+    return { ok: true, json: async () => ({ tiles: [
+      "/basemap/tiles/v1/{z}/{x}/{y}.webp"], minzoom: 0, maxzoom: 18 }) };
+  }, {
+    businessRuntime: { async fetch() { throw new Error("A public fond needs no identity"); } },
   });
-  const descriptor = await basemap.loadStrict(`/api/bases/${base}/basemaps/ign-epure.json`);
-  assert.equal(scoped, 1); assert(descriptor.url.includes(`/api/bases/${base}/`));
+  const descriptor = await basemap.loadStrict("/basemap/plan-ign.json");
+  assert.equal(requests, 1);
+  assert.equal(descriptor.url, "https://app.example.test/basemap/tiles/v1/{z}/{x}/{y}.webp");
 });
 
 test("TileJSON provides the tile template and zoom limits", async () => {
