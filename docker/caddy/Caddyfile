@@ -1,0 +1,17 @@
+{$APP_DOMAIN:digues-app.fr} {
+	handle /internal/* {
+		respond 404
+	}
+	handle /basemap/* {
+		reverse_proxy basemap:8788
+	}
+	handle {
+		reverse_proxy app:8000
+	}
+}
+
+{$ADMIN_DOMAIN:admin.digues-app.fr} {
+	header Strict-Transport-Security "max-age=31536000"
+	header Cache-Control "no-store"
+	reverse_proxy app:8000
+}

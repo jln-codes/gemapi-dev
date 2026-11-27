@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#165a4a">
+    <link rel="icon" href="/static/icons/digues-app.svg" type="image/svg+xml">
+    <title>Données — digues.app</title>
+    <link rel="stylesheet" href="/static/css/modal.css">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/css/entity-forms.css">
+    <link rel="stylesheet" href="/static/css/business-session.css">
+  </head>
+  <body class="data-page" data-interface="data">
+    <main hidden>
+      <header class="app-header" data-interface="data"></header>
+      <script type="application/x-business-script" data-business-src="/static/js/app-header.js"></script>
+
+      <div id="app-workspace" class="data-workspace">
+        <section id="data-statistics-view" class="data-statistics-view" aria-labelledby="data-statistics-title">
+          <h1 id="data-statistics-title">Statistiques</h1>
+          <p>Le tableau de statistiques sera disponible prochainement.</p>
+        </section>
+        <section id="data-view-builder-workspace" class="data-view-builder-workspace" aria-label="Constructeur de vues" hidden>
+          <section id="base-summary" class="base-summary" aria-labelledby="base-summary-title" hidden>
+            <h2 id="base-summary-title">Synthèse de la base</h2>
+            <dl class="base-summary-grid">
+              <div class="base-summary-item">
+                <dt>Système de coordonnées</dt>
+                <dd id="base-summary-crs"></dd>
+              </div>
+            </dl>
+          </section>
+          <section class="data-view-builder" aria-label="Construire une vue">
+            <div class="data-view-builder-controls">
+              <label hidden>
+                Regrouper par
+                <select id="data-view-root"></select>
+              </label>
+              <label>
+                Table
+                <select id="data-view-table"></select>
+              </label>
+              <label>
+                Champ
+                <select id="data-view-field"></select>
+              </label>
+              <button id="data-view-add-field" type="button">Ajouter</button>
+            </div>
+            <div class="data-view-selected-fields" aria-label="Champs ajoutés">
+              <span>Colonnes ajoutées :</span>
+              <div id="data-view-field-list"></div>
+            </div>
+          </section>
+          <div
+            id="data-view-resizer"
+            class="data-view-resizer"
+            role="separator"
+            aria-label="Redimensionner le constructeur"
+            aria-orientation="horizontal"
+            aria-valuemin="88"
+            tabindex="0"
+          ></div>
+          <section class="data-view-result" aria-labelledby="data-view-result-title">
+            <header class="data-view-result-header">
+              <h2 id="data-view-result-title">Tableau résultant</h2>
+              <p id="data-view-result-status" role="status"></p>
+              <button type="button" data-tool-action="offline-consultation">Synchronisation locale</button>
+            </header>
+            <div class="data-view-result-scroll data-grid-scroll">
+              <table id="data-view-result-table" class="data-grid-table" hidden>
+                <thead><tr id="data-view-result-head"></tr></thead>
+                <tbody id="data-view-result-body"></tbody>
+              </table>
+              <p id="data-view-result-empty" class="data-view-result-empty">
+                Ajoutez un champ pour construire la vue.
+              </p>
+            </div>
+            <footer id="data-view-export-bar" class="data-export-bar" hidden>
+              <p id="data-view-export-status" role="status"></p>
+              <button id="data-view-export-csv" type="button">Exporter CSV</button>
+              <button id="data-view-export-gpkg" type="button">Exporter GPKG</button>
+            </footer>
+          </section>
+        </section>
+        <section id="data-entity-detail" class="data-entity-detail" aria-labelledby="data-entity-detail-title" hidden>
+
+        </section>
+      <aside id="heritage-panel" class="heritage-panel" hidden>
+        <div class="heritage-title">
+          <div>
+            <strong>Patrimoine</strong>
+            <span>Systèmes, digues et aménagements hydrauliques</span>
+          </div>
+          <button id="close-heritage" class="icon-button" type="button" aria-label="Fermer">×</button>
+        </div>
+        <p id="heritage-selection-summary" class="heritage-selection-summary" role="status"></p>
+        <section class="heritage-tree-section" aria-labelledby="heritage-tree-title">
+          <h2 id="heritage-tree-title">Navigation</h2>
+          <p id="heritage-loading" class="field-help">Ouvrez le module pour charger l’arbre.</p>
+          <div id="heritage-tree" class="heritage-tree" role="tree"></div>
+        </section>
+      </aside>
+      <section id="queries-view" class="queries-view tool-panel" aria-label="Requêtes SQL" hidden>
+        <button
+          id="close-queries"
+          class="icon-button tool-panel-close"
+          type="button"
+          aria-label="Fermer les requêtes SQL"
+        >×</button>
+        <div class="sql-tool tool-panel-body">
+          <form id="sql-query-form" class="sql-query-form">
+            <div class="sql-preset-control">
+              <label for="sql-preset-select">Requête prédéfinie</label>
+              <select id="sql-preset-select" disabled>
+                <option value="">Choisir une requête…</option>
+              </select>
+              <p id="sql-preset-description" class="field-help" role="status" hidden></p>
+            </div>
+            <label for="sql-query-editor">Requête</label>
+            <textarea
+              id="sql-query-editor"
+              name="sql"
+              rows="10"
+              maxlength="50000"
+              spellcheck="false"
+              placeholder="SELECT …"
+              required
+            ></textarea>
+            <div class="sql-query-actions">
+              <span id="sql-query-status" role="status"></span>
+              <div class="sql-query-buttons">
+                <button id="sql-query-submit" type="submit">Exécuter</button>
+              </div>
+            </div>
+          </form>
+          <section id="sql-results" class="sql-results" aria-live="polite">
+            <p id="sql-result-summary" class="sql-result-summary" hidden></p>
+            <p id="sql-result-error" class="sql-result-error" role="alert" hidden></p>
+            <p id="sql-result-empty" class="sql-result-empty" hidden>Aucune ligne retournée.</p>
+            <div id="sql-result-table-wrapper" class="sql-result-table-wrapper" hidden>
+              <table id="sql-result-table">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div id="sql-result-actions" class="sql-result-actions" hidden>
+              <button id="sql-export-csv" type="button">
+                Exporter CSV
+              </button>
+            </div>
+          </section>
+        </div>
+      </section>
+      <aside id="ai-panel" class="ai-panel tool-panel" aria-label="Assistant IA" hidden>
+        <button
+          id="close-ai"
+          class="icon-button tool-panel-close"
+          type="button"
+          aria-label="Fermer l’assistant IA"
+        >×</button>
+        <div class="ai-tool-panel-body tool-panel-body">
+          <div
+            id="ai-conversation"
+            class="ai-conversation"
+            role="log"
+            aria-live="polite"
+            aria-label="Conversation avec l’assistant IA"
+          >
+            <p id="ai-conversation-empty" class="ai-conversation-empty">
+              Posez une question à l’assistant.
+            </p>
+          </div>
+          <form id="ai-chat-form" class="ai-chat-form">
+            <label for="ai-message">Message</label>
+            <textarea
+              id="ai-message"
+              name="message"
+              rows="3"
+              maxlength="8000"
+              placeholder="Écrivez votre message…"
+              required
+            ></textarea>
+            <div class="ai-chat-actions">
+              <span id="ai-chat-status" role="status"></span>
+              <button id="ai-send" type="submit">Envoyer</button>
+            </div>
+          </form>
+        </div>
+      </aside>
+      </div>
+      <div id="pwa-update-notice" class="pwa-update-notice" role="status" hidden>
+        <span>Une nouvelle version de digues.app est disponible.</span>
+        <button id="pwa-update-button" type="button">Mettre à jour</button>
+      </div>
+    </main>
+    <script src="/static/vendor/marked/marked.umd.js"></script>
+    <div id="offline-consultation-modal" class="territoire-modal" role="dialog" aria-modal="true"
+      aria-labelledby="offline-consultation-modal-title" hidden>
+      <div class="territoire-dialog offline-consultation-dialog">
+        <div class="editor-title">
+          <strong id="offline-consultation-modal-title">Synchronisation locale</strong>
+          <button id="close-offline-consultation-modal" class="icon-button" type="button" aria-label="Fermer">×</button>
+        </div>
+        <p id="offline-status" role="status">Aucun périmètre préparé</p>
+        <section id="offline-operations" class="offline-consultation-section" aria-labelledby="offline-sync-title">
+          <h2 id="offline-sync-title">Opérations conservées sur cet appareil</h2>
+          <div class="offline-sync-summary" data-summary role="status" aria-live="polite">
+            <span><strong data-count="pending">0</strong> en attente</span>
+            <span><strong data-count="syncing">0</strong> en cours</span>
+            <span><strong data-count="synced">0</strong> synchronisées pendant cette session</span>
+            <span><strong data-count="conflict">0</strong> conflits</span>
+            <span><strong data-count="failed">0</strong> erreurs</span>
+          </div>
+          <p class="field-help" data-summary-message></p>
+          <button type="button" data-synchronize-now>Synchroniser maintenant</button>
+          <div class="offline-intentions" data-intentions></div>
+        </section>
+      </div>
+    </div>
+    <script type="application/x-business-script" data-business-src="/static/js/inter-page-bus.js" data-source="data"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/top-navigation.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/help-panel.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/reference-data.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/relation-selector.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/entity-form-view.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/vendor/proj4/proj4.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/entity-geometry-draft.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/mobilier-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/entity-form-session.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/ouvrage-particulier-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/cheminement-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/vegetation-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/amenagement-hydraulique-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/zone-stockage-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/prestation-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/heritage-panel.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/heritage-selection-sync.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/interface-coordination.js" data-interface="data"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/resource-invalidation.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/resource-events.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/resource-concurrency.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/resource-mutation.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/local-projection.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/data-view-default.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/offline-consultation.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/resource-server-transport.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/offline-operations.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/data-resource-invalidators.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/ai-panel.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/sql-tool.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/data-gpkg-export.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/data-view-builder.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/entity-navigation.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/disorder-related-objects.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/observation-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/observation-parent-list.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/observation-detail.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/lit-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/lit-characteristics.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/troncon-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/troncon-reperage.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/data-entity-detail.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/photo-form.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/photo-localisation.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/photo-editor.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/photo-file.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/photo-offline.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/observation-create.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/disorder-reports.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/base-detail-registry.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/base-detail-repository.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/base-detail-view.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/base-detail-editor.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/base-detail-controller.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/data-view.js"></script>
+    <script type="application/x-business-script" data-business-src="/static/js/pwa.js"></script>
+    <script src="/static/js/business-context.js"></script>
+    <script src="/static/js/database-access.js"></script>
+    <script src="/static/js/business-bootstrap.js"></script>
+  </body>
+</html>

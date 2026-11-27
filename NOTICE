@@ -1,0 +1,11 @@
+Digues App
+
+Copyright 2026 Julien Lorion
+
+Licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full license text.
+
+gemapi.dev includes modified files derived from Digues App at
+eecec0a44f25a908484b76f838a7e2be0c8cfee5.
+See audits/GEMAPI-INIT-01.md and subsequent milestone reports for provenance
+and modifications. Third-party notices remain with the distributed assets.

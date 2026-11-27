@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">digues.app</title>
+  <rect width="512" height="512" rx="96" fill="#165a4a"/>
+  <path d="M80 342c58-44 118-45 176-2s118 42 176-2" fill="none" stroke="#9ed9cf" stroke-width="34" stroke-linecap="round"/>
+  <path d="M112 284 218 150h76l106 134Z" fill="#f3f6f4"/>
+  <path d="M256 150v134" fill="none" stroke="#d4a84e" stroke-width="28"/>
+</svg>

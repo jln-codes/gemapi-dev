@@ -1,0 +1,64 @@
+{
+  "contract_version": 1,
+  "min_free_bytes": 3221225472,
+  "products": [
+    {
+      "id": "ign-epure",
+      "display_name": "PLAN.IGN \u00c9pur\u00e9",
+      "scope": "global",
+      "policy": "persistent-reconstructible",
+      "directory": "ign/epure",
+      "resource_max_age_seconds": 86400,
+      "tile_max_age_seconds": 0,
+      "eviction": "lru",
+      "retain_on_error": true,
+      "http_max_age_seconds": 3600,
+      "resources": true
+    },
+    {
+      "id": "ign-plan",
+      "display_name": "PLANIGNV2 raster",
+      "scope": "global",
+      "policy": "persistent-reconstructible",
+      "directory": "ign/plan",
+      "resource_max_age_seconds": 0,
+      "tile_max_age_seconds": 86400,
+      "eviction": "lru",
+      "retain_on_error": true,
+      "http_max_age_seconds": 3600,
+      "resources": false
+    },
+    {
+      "id": "ign-ortho",
+      "display_name": "BD ORTHO IGN",
+      "scope": "global",
+      "policy": "persistent-reconstructible",
+      "directory": "ign/ortho",
+      "resource_max_age_seconds": 0,
+      "tile_max_age_seconds": 86400,
+      "eviction": "lru",
+      "retain_on_error": true,
+      "http_max_age_seconds": 3600,
+      "resources": false
+    },
+    {
+      "id": "ign-lidar-hd-mnt",
+      "display_name": "MNT LiDAR HD IGN num\u00e9rique",
+      "scope": "global",
+      "policy": "planned-reconstructible",
+      "directory": "ign/lidar-hd/mnt",
+      "resource_max_age_seconds": 0,
+      "tile_max_age_seconds": 0,
+      "eviction": "lru",
+      "retain_on_error": false,
+      "http_max_age_seconds": 0,
+      "artifact": {
+        "format": "geotiff-float32",
+        "generation": "lidar-hd-mnt-v1",
+        "grid_id": "epsg2154-050cm-512-v1"
+      },
+      "resources": false
+    }
+  ],
+  "capacity_bytes": 23622320128
+}

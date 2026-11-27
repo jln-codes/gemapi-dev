@@ -1,1 +1,11 @@
 assets/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+node_modules/
+.venv/
+.env
+test-results/
+playwright-report/

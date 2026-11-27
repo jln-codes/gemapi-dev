@@ -1,0 +1,139 @@
+contract_version = 1
+min_free_bytes = 3221225472
+
+[[basemaps]]
+id = "ign-epure"
+display_name = "PLAN.IGN Épuré"
+order = 10
+enabled = true
+default = true
+adapter = "plan_ign_raster"
+public_tilejson_url = "/basemap/plan-ign.json"
+native_min_zoom = 0
+native_max_zoom = 18
+display_max_zoom = 19
+attribution = "© IGN — PLAN.IGN"
+tile_format = "webp"
+
+[basemaps.capabilities]
+browser_print = true
+server_pdf = true
+
+[basemaps.offline]
+required = true
+status = "planned"
+retention = "review-required"
+min_zoom = 0
+max_zoom = 18
+
+[basemaps.cache]
+id = "ign-epure"
+policy = "persistent-reconstructible"
+http_max_age_seconds = 3600
+directory = "ign/epure"
+resources = true
+resource_max_age_seconds = 86400
+tile_max_age_seconds = 0
+eviction = "lru"
+retain_on_error = true
+
+[[basemaps]]
+id = "ign-plan"
+display_name = "PLANIGNV2 raster"
+order = 20
+enabled = true
+default = false
+adapter = "wmts_raster"
+public_tilejson_url = "/basemap/ign-plan.json"
+provider_endpoint = "https://data.geopf.fr/wmts"
+provider_layer = "GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2"
+provider_style = "normal"
+tile_matrix_set = "PM_0_19"
+wmts_publication = "authorized"
+cache_generation = "2026-10"
+wmts_matrix_limits = [
+  [0,0,0,0,0], [1,0,1,0,1], [2,0,3,0,3], [3,0,7,0,7],
+  [4,0,15,0,15], [5,0,31,0,31], [6,0,63,0,63], [7,0,127,0,127],
+  [8,0,255,0,255], [9,0,511,0,511], [10,1,1022,0,1023],
+  [11,3,2044,0,2047], [12,6,4089,1,4094], [13,13,8178,2,8189],
+  [14,26,16357,4,16379], [15,53,32714,9,32758],
+  [16,107,65428,18,65517], [17,214,130857,36,131035],
+  [18,429,261714,72,262071], [19,858,523429,145,524142],
+]
+native_min_zoom = 0
+native_max_zoom = 19
+display_max_zoom = 20
+attribution = "© IGN — PLANIGNV2"
+tile_format = "png"
+
+[basemaps.capabilities]
+browser_print = false
+server_pdf = false
+
+[basemaps.offline]
+required = true
+status = "planned"
+retention = "review-required"
+min_zoom = 0
+max_zoom = 19
+
+[basemaps.cache]
+id = "ign-plan"
+policy = "persistent-reconstructible"
+http_max_age_seconds = 3600
+directory = "ign/plan"
+resources = false
+resource_max_age_seconds = 0
+tile_max_age_seconds = 86400
+eviction = "lru"
+retain_on_error = true
+
+[[basemaps]]
+id = "ign-ortho"
+display_name = "BD ORTHO IGN"
+order = 30
+enabled = true
+default = false
+adapter = "wmts_raster"
+public_tilejson_url = "/basemap/ign-ortho.json"
+provider_endpoint = "https://data.geopf.fr/wmts"
+provider_layer = "HR.ORTHOIMAGERY.ORTHOPHOTOS"
+provider_style = "normal"
+tile_matrix_set = "PM_6_19"
+wmts_publication = "authorized"
+cache_generation = "2026-10"
+wmts_matrix_limits = [
+  [6,7,56,0,63], [7,14,113,0,127], [8,28,227,0,255],
+  [9,57,454,0,511], [10,114,909,0,1023], [11,229,1818,0,2047],
+  [12,459,3636,0,4095], [13,919,7272,0,8191],
+  [14,1839,14544,0,16383], [15,3678,29089,0,32767],
+  [16,7357,58178,0,65535], [17,14714,116357,0,131071],
+  [18,29428,232715,0,262143], [19,58856,465431,0,524287],
+]
+native_min_zoom = 6
+native_max_zoom = 19
+display_max_zoom = 20
+attribution = "© IGN — BD ORTHO"
+tile_format = "jpeg"
+
+[basemaps.capabilities]
+browser_print = false
+server_pdf = false
+
+[basemaps.offline]
+required = true
+status = "planned"
+retention = "review-required"
+min_zoom = 6
+max_zoom = 19
+
+[basemaps.cache]
+id = "ign-ortho"
+policy = "persistent-reconstructible"
+http_max_age_seconds = 3600
+directory = "ign/ortho"
+resources = false
+resource_max_age_seconds = 0
+tile_max_age_seconds = 86400
+eviction = "lru"
+retain_on_error = true

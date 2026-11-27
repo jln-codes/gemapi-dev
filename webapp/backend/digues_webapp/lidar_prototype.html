@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prototype MNT LiDAR HD · digues.app</title>
+  <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/static/css/lidar-prototype.css">
+  <script src="/static/vendor/leaflet/leaflet.js" defer></script>
+  <script src="/static/vendor/proj4/proj4.js" defer></script>
+  <script src="/static/vendor/geotiff/geotiff.js" defer></script>
+  <script src="/static/js/lidar-prototype-core.js" defer></script>
+  <script src="/static/js/leaflet-layer-order.js" defer></script>
+  <script src="/static/js/lidar-canvas.js" defer></script>
+  <script src="/static/js/lidar-prototype.js" defer></script>
+</head>
+<body>
+  <aside class="controls" aria-label="Réglages du prototype LiDAR">
+    <h1>MNT LiDAR HD <small>Prototype</small></h1>
+    <p>Lecture multirésolution des secteurs autorisés par les masques SE/AH.</p>
+    <form id="selection-form">
+      <label>Base métier <select id="business-base" required></select></label>
+      <label>Ensembles explicites, un par ligne (SE:UUID ou AH:UUID)
+        <textarea id="ensembles" rows="4" required spellcheck="false"></textarea>
+      </label>
+      <button type="submit">Afficher cette sélection</button>
+    </form>
+    <label>Opacité <input id="opacity" type="range" min="0" max="100" value="68"> <output id="opacity-label">68 %</output></label>
+    <p id="status" role="status">Connexion au contexte métier…</p>
+    <dl id="metrics" aria-label="Mesures du prototype">
+      <div><dt>Blocs planifiés</dt><dd id="m-planned">0</dd></div>
+      <div><dt>Chargés / en attente</dt><dd id="m-loaded">0 / 0</dd></div>
+      <div><dt>Corps API LiDAR reçus</dt><dd id="m-network">0 o</dd></div>
+      <div><dt>Planification</dt><dd id="m-plan-time">—</dd></div>
+      <div><dt>Récupération</dt><dd id="m-fetch-time">—</dd></div>
+      <div><dt>Décodage</dt><dd id="m-decode-time">—</dd></div>
+      <div><dt>Projection / échantillonnage</dt><dd id="m-sample-time">—</dd></div>
+      <div><dt>Colorisation</dt><dd id="m-color-time">—</dd></div>
+      <div><dt>Écart de projection contrôlé</dt><dd id="m-projection-error">—</dd></div>
+      <div><dt>Affichage complet</dt><dd id="m-total-time">—</dd></div>
+      <div><dt>Mémoire Float32</dt><dd id="m-memory">0 Mio</dd></div>
+      <div><dt>Altitudes de la vue</dt><dd id="m-range">—</dd></div>
+      <div><dt>Origine des blocs</dt><dd id="m-cache">—</dd></div>
+    </dl>
+    <p class="note">Les temps sont mesurés ici dans le navigateur. <code>X-Cache: MISS</code> ne distingue pas, à lui seul, une acquisition IGN d’une autre création de cache.</p>
+    <p class="note">Source altimétrique : IGN · MNT LiDAR HD, service WMS-Raster Géoplateforme.</p>
+  </aside>
+  <main><div id="map" aria-label="Carte de démonstration LiDAR"></div></main>
+</body>
+</html>

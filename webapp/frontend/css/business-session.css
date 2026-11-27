@@ -1,0 +1,64 @@
+main[hidden], #identity-gate[hidden] { display: none !important; }
+#identity-gate { color: #173b32; }
+#identity-gate form, #identity-gate label { display: grid; gap: .75rem; }
+#identity-gate label { font-size: .82rem; font-weight: 600; }
+#identity-gate input { border: 1px solid var(--app-border-dark); border-radius: .3rem; font: inherit; padding: .55rem; width: 100%; }
+.identity-demo-access {
+  border-top: 1px solid var(--app-separator);
+  font-size: .875rem;
+  padding-top: .85rem;
+}
+.identity-demo-access a { color: var(--app-green-dark); }
+.identity-demo-access a:focus-visible {
+  outline: 2px solid var(--app-green-strong);
+  outline-offset: 3px;
+}
+/* Connexion uniquement : ni le choix de base ni les autres dialogues. */
+#identity-gate .identity-login-dialog {
+  width: 26.25rem;
+  max-width: 100%;
+  padding: .75rem;
+  gap: .5rem;
+}
+#identity-gate .identity-login-dialog > .app-modal-body { gap: .5rem; }
+#identity-gate .identity-login-dialog form { gap: .375rem; }
+#identity-gate .identity-login-dialog label { gap: .25rem; }
+#identity-gate .identity-login-dialog :is(input, button) { min-height: 2.75rem; }
+#identity-gate .identity-login-dialog [role="status"] {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+/* Retirer la piste vide de la grille sans masquer la région live aux aides techniques. */
+#identity-gate .identity-login-dialog [role="status"]:empty { position: absolute; }
+#identity-gate .identity-login-dialog .identity-demo-access { padding-top: .5rem; }
+.identity-base-list { display: grid; gap: .6rem; }
+.identity-base-list .identity-base-choice {
+  background: var(--app-white);
+  border: 1px solid var(--app-border);
+  border-radius: .3rem;
+  color: var(--app-text);
+  display: block;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  padding: .65rem .75rem;
+  text-decoration: none;
+}
+.identity-base-list .identity-base-choice:hover,
+.identity-base-list .identity-base-choice:focus-visible {
+  background: var(--app-green-pale);
+  border-color: var(--app-green-strong);
+}
+.identity-base-list .identity-base-choice:focus-visible {
+  outline: 2px solid var(--app-green-strong);
+  outline-offset: 2px;
+}
+[data-permission-denied] { display: none !important; }
+body[data-business-update="false"] :is(#desordre-editor input, #desordre-editor textarea, #desordre-editor select, #observation-suite-form input, #observation-suite-form textarea, #observation-suite-form select) { pointer-events: none; }
+body[data-business-update="false"] #desordre-editor button:not(#desordre-pdf) { display: none !important; }
+body[data-business-create="false"] :is(#toggle-create-menu, [data-create-type], #create-troncon-observation, #create-desordre-observation, #add-observation-photo, [data-requires="business.create"]),
+body[data-business-update="false"] :is(#data-entity-detail-edit, #edit-photo-localisation, #edit-photo-metadata, #start-point-edit, #start-line-edit, #observation-suite-form button[type="submit"], #heritage-object-editor button[type="submit"], #desordre-form button[type="submit"], [data-requires="business.update"], [data-tool-action="territoire-administratif"]),
+body[data-sql-read="false"] :is(#toggle-queries, #queries-view),
+body[data-ai-read="false"] :is(#toggle-ai, #ai-panel),
+body[data-exports-read="false"] :is(.data-export-bar, #sql-export-csv, #desordre-pdf, .disorder-report-action, [data-tool-action="disorder-catalogue"], [data-tool-action="print-map"]),
+body[data-offline-prepare="false"] #prepare-offline,
+body[data-offline-write="false"] [data-requires="offline.write"] { display: none !important; }

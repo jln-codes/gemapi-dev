@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-11 -10 245 245" role="img" aria-labelledby="title desc">
+  <title id="title">digues.app — Logo historique aux couleurs actuelles</title>
+  <desc id="desc">Une digue blanche dont les extrémités rejoignent un cercle vert profond, deux lignes de vagues bleu pétrole et un petit repère GPS assorti.</desc>
+  <circle cx="111.313333" cy="112.5" r="121.0245" fill="#165a4a"/>
+  <path d="M0 160L59 77L104 74L126 107L168 109L225 154L166 128H116L102 98L64 101Z" fill="#ffffff"/>
+  <g fill="none" stroke="#4B9AA7" stroke-width="8" stroke-linecap="round">
+    <path d="M52 170q10-7 20 0t20 0t20 0t20 0t20 0t20 0"/>
+    <path d="M64 197q10-7 20 0t20 0t20 0t20 0t20 0"/>
+  </g>
+  <g transform="translate(156 65) scale(1.16) translate(-156 -70)">
+    <path d="M156 55C149.4 55 144 60.4 144 67C144 76 156 88 156 88S168 76 168 67C168 60.4 162.6 55 156 55Z" fill="#4B9AA7" stroke="#f3f6f4" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="156" cy="67" r="4" fill="#ffffff"/>
+  </g>
+</svg>

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digues-app"
+version = "0.1.0"
+description = "Gestion des digues et migration de données SIRS Digues vers PostgreSQL/PostGIS"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "argon2-cffi==25.1.0",
+    "matplotlib>=3.8,<4",
+    "Pillow>=12.1,<13",
+    "psycopg[binary]>=3.2,<4",
+    "pypdf>=5,<7",
+    "python-dotenv>=1.0,<2",
+    "reportlab>=4.0,<6",
+    "requests>=2.31,<3",
+    "cryptography>=41,<47",
+    "jsonschema>=4.10.3,<5",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.4,<10", "setuptools>=68", "wheel>=0.42,<1"]
+
+[project.scripts]
+digues-app = "digues_app.cli:main"
+digues-provision-worker = "digues_app.provisioning.worker:main"
+
+[tool.setuptools.packages.find]
+include = ["digues_app*"]
+
+[tool.setuptools.package-data]
+"digues_app.master_model" = ["*.json"]
+"digues_app.structure_contract" = ["structure-v1.json"]
+"digues_app.demo" = [
+    "assets/README.md",
+    "assets/photos/*.jpg",
+    "assets/photos/README.md",
+    "assets/territoire/*.gpkg",
+]
+"digues_app.target" = ["schema_current.sql"]
+"digues_app.references" = ["data/*.json"]
