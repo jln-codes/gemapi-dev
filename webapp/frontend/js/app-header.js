@@ -235,8 +235,7 @@
       : "") : (interfaceType === "map" ? mapCommands() : dataCommands());
     header.innerHTML = `
       <div class="app-brand">
-        <strong>digues.app</strong>
-        <span>version expérimentale</span>
+        <img src="/branding/cartouche.png" alt="gemapi.dev" width="1200" height="400">
       </div>
       <div class="header-navigation">
         <div class="app-navigation-viewport">

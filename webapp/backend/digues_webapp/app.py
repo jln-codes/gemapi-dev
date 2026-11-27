@@ -65,7 +65,11 @@ def create_app() -> FastAPI:
 
     @application.get("/manifest.webmanifest", include_in_schema=False)
     def web_manifest():
-        return FileResponse(FRONTEND_DIRECTORY / "manifest.webmanifest",
+        return RedirectResponse("/branding/site.webmanifest")
+
+    @application.get("/branding/site.webmanifest", include_in_schema=False)
+    def brand_manifest():
+        return FileResponse(FRONTEND_DIRECTORY / "branding" / "site.webmanifest",
                             media_type="application/manifest+json")
 
     @application.get("/service-worker.js", include_in_schema=False)
@@ -91,6 +95,7 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     register_closed_routes(application)
+    application.mount("/branding", StaticFiles(directory=FRONTEND_DIRECTORY / "branding"), name="branding")
     application.mount("/static", StaticFiles(directory=FRONTEND_DIRECTORY), name="static")
     return application
 

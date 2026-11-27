@@ -3,9 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#165a4a">
-    <link rel="icon" href="/static/icons/digues-app.svg" type="image/svg+xml">
-    <title>Données — digues.app</title>
+    <meta name="theme-color" content="#23443D">
+    <link rel="icon" href="/branding/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/branding/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/branding/favicon-16x16.png">
+    <title>Données — gemapi.dev</title>
     <link rel="stylesheet" href="/static/css/modal.css">
     <link rel="stylesheet" href="/static/css/app.css">
     <link rel="stylesheet" href="/static/css/entity-forms.css">
@@ -16,7 +18,10 @@
       <header class="app-header" data-interface="data"></header>
       <script src="/static/js/app-header.js"></script>
 
-      <p class="technical-access-status" role="status">L’accès aux données est fermé dans cette version.</p>
+      <section class="technical-access-status app-modal-dialog" aria-labelledby="access-title">
+        <header class="app-modal-header"><h1 id="access-title">Accès aux données</h1></header>
+        <div class="app-modal-body"><p>L’accès aux données est fermé dans cette version.</p></div>
+      </section>
       <div id="app-workspace" hidden class="data-workspace">
         <section id="data-statistics-view" class="data-statistics-view" aria-labelledby="data-statistics-title">
           <h1 id="data-statistics-title">Statistiques</h1>
@@ -191,7 +196,7 @@
       </aside>
       </div>
       <div id="pwa-update-notice" class="pwa-update-notice" role="status" hidden>
-        <span>Une nouvelle version de digues.app est disponible.</span>
+        <span>Une nouvelle version de gemapi.dev est disponible.</span>
         <button id="pwa-update-button" type="button">Mettre à jour</button>
       </div>
     </main>
