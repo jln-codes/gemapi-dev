@@ -52,7 +52,7 @@ QGIS-01	docs/qgis_relations.md	0e79eb6240283fc3142c048633678342cf09c1a6	plugin/R
 QGIS-01	plugin/README.md	1d492ccc82c628c0c36ac5c77cd096c93423af79	plugin/README.md	adapté/extrait
 QGIS-01	plugin/gemapi_app/__init__.py	325ef6263be3d90d3ffb173df44b431c7319c6ad	plugin/gemapi_app/__init__.py	identique
 QGIS-01	plugin/gemapi_app/ah_sections.py	91f786fbd39993b7b83bf59484424751d3f6ead7	plugin/gemapi_app/ah_sections.py	identique
-QGIS-01	plugin/gemapi_app/assets/logo_cabbalr.webp	f253d79884f6bea615408ab73fc694ba00766989	plugin/gemapi_app/assets/logo_cabbalr.webp	identique
+QGIS-01	plugin/gemapi_app/assets/logo_cabbalr.webp	f253d79884f6bea615408ab73fc694ba00766989	plugin/gemapi_app/assets/logo_institutionnel.webp	remplacement fictif PUBLICATION-01
 QGIS-01	plugin/gemapi_app/assistant.py	902f25118636c28c26998e5e31bafab8997a1fac	plugin/gemapi_app/assistant.py	identique
 QGIS-01	plugin/gemapi_app/assistant_dialog.py	4a43fa4f27b18f762b463962a9a32c034b833128	plugin/gemapi_app/assistant_dialog.py	identique
 QGIS-01	plugin/gemapi_app/create.ui	2247538c3aa64d7e4cd13bc467fa22403dcff385	plugin/gemapi_app/create.ui	identique
@@ -61,13 +61,13 @@ QGIS-01	plugin/gemapi_app/digitize.py	b36fc3f3389cd322fc3194ec0c7ddadd872a7b8b	p
 QGIS-01	plugin/gemapi_app/digues.py	9b737014259cdd20240032ab7185991da07d3c57	plugin/gemapi_app/digues.py	identique
 QGIS-01	plugin/gemapi_app/filter_picker.py	3e1fcf514b32bc3483518104a41a29f6cef2d0c2	plugin/gemapi_app/filter_picker.py	identique
 QGIS-01	plugin/gemapi_app/form.ui	9753f7b2244dc716c638bd9fcc4f148af18e8afc	plugin/gemapi_app/form.ui	identique
-QGIS-01	plugin/gemapi_app/help.md	c074eb0cd1703666b9a5c93d44b87e84b917f59c	plugin/gemapi_app/help.md	identique
+QGIS-01	plugin/gemapi_app/help.md	c074eb0cd1703666b9a5c93d44b87e84b917f59c	plugin/gemapi_app/help.md	adapté pour PUBLICATION-01
 QGIS-01	plugin/gemapi_app/home.ui	0ccdb0d606a85e67eed803133e52af7b65bdecb9	plugin/gemapi_app/home.ui	identique
 QGIS-01	plugin/gemapi_app/hydro_groups.py	19754b0845e5face11ecc440e7d85033cbc9ef58	plugin/gemapi_app/hydro_groups.py	identique
 QGIS-01	plugin/gemapi_app/icons/icon.png	f641f4118409fb736171961df1a1f427b820890e	plugin/gemapi_app/icons/icon.png	identique
 QGIS-01	plugin/gemapi_app/icons/icon.svg	5d20942e618865e97da75758948bb54dbd4e2680	plugin/gemapi_app/icons/icon.svg	identique
 QGIS-01	plugin/gemapi_app/management.py	1bc7cffd107f9188849049469b3543063ab3e3c7	plugin/gemapi_app/management.py	identique
-QGIS-01	plugin/gemapi_app/metadata.txt	76ba0faf522ca6c85248f0343f89f074c44d02ec	plugin/gemapi_app/metadata.txt	identique
+QGIS-01	plugin/gemapi_app/metadata.txt	76ba0faf522ca6c85248f0343f89f074c44d02ec	plugin/gemapi_app/metadata.txt	adapté pour PUBLICATION-01
 QGIS-01	plugin/gemapi_app/patrimony_spatial.py	d498604bb7eb42df179d2919aa9105ee0a155591	plugin/gemapi_app/patrimony_spatial.py	identique
 QGIS-01	plugin/gemapi_app/pdf_runtime.py	8abfc2c725b703a426b45716fb3f0f39b4ffbe99	plugin/gemapi_app/pdf_runtime.py	identique
 QGIS-01	plugin/gemapi_app/perf.py	0d3f53f385326b3a013ab42f6add67905cfa354e	plugin/gemapi_app/perf.py	identique
@@ -80,7 +80,7 @@ QGIS-01	plugin/gemapi_app/report.ui	5d521cc275417fd121d50e434cee95c00e581176	plu
 QGIS-01	plugin/gemapi_app/report_data.py	12a6e8f4bb94e808f4a2b622df74c535ab4ba9a8	plugin/gemapi_app/report_data.py	identique
 QGIS-01	plugin/gemapi_app/report_dialog.py	d2d56ed8f8e97fd46a731e2fa8f000920a6ad5b1	plugin/gemapi_app/report_dialog.py	identique
 QGIS-01	plugin/gemapi_app/report_maps.py	1249758898f28fd931b0e1273dd27f5fb37afac9	plugin/gemapi_app/report_maps.py	identique
-QGIS-01	plugin/gemapi_app/report_pdf.py	320d74cf340c468904071f6581bb524630f4442d	plugin/gemapi_app/report_pdf.py	identique
+QGIS-01	plugin/gemapi_app/report_pdf.py	320d74cf340c468904071f6581bb524630f4442d	plugin/gemapi_app/report_pdf.py	adapté pour PUBLICATION-01
 QGIS-01	plugin/gemapi_app/report_synthetic_portrait.py	3a4c53ab2aee3f617f880264e4e6257b5ce4e7ba	plugin/gemapi_app/report_synthetic_portrait.py	identique
 QGIS-01	plugin/gemapi_app/report_worker.py	f049546f691d8709952f52f73884d890ff2c23af	plugin/gemapi_app/report_worker.py	identique
 QGIS-01	plugin/gemapi_app/session_data.py	914ff64c37cacb2496acd57d1b4c2f60b7d815e1	plugin/gemapi_app/session_data.py	identique
@@ -103,7 +103,7 @@ QGIS-01	plugin/tests/test_edit_integration.py	203bde4e8861e4bf8ab7a58225e78edc68
 QGIS-01	plugin/tests/test_form_metier_ui.py	6ffdefa40dc104528cc693d672d099c2b533851c	plugin/tests/test_form_metier_ui.py	adapté/extrait
 QGIS-01	plugin/tests/test_hydro_assoc_integration.py	d554ae90abd75d8a51d951a23954792f06d342e9	plugin/tests/test_hydro_assoc_integration.py	adapté/extrait
 QGIS-01	plugin/tests/test_mod_geom_project.py	ff352e3769b5446ffc3ef0edf26f9989afd9a3ed	plugin/tests/test_mod_geom_project.py	adapté/extrait
-QGIS-01	plugin/tests/test_package.py	56eafd1bad61bae1928c5f34a4911ddd5ce987bb	plugin/tests/test_package.py	identique
+QGIS-01	plugin/tests/test_package.py	56eafd1bad61bae1928c5f34a4911ddd5ce987bb	plugin/tests/test_package.py	adapté pour PUBLICATION-01
 QGIS-01	plugin/tests/test_patrimony_spatial_integration.py	2fa616a58ff3383f0895cbf717f03816746c07fc	plugin/tests/test_patrimony_spatial_integration.py	adapté/extrait
 QGIS-01	plugin/tests/test_pdf_export_modes.py	621daa8818baf2375d642a70bca58eaf8c9f6dc7	plugin/tests/test_pdf_export_modes.py	identique
 QGIS-01	plugin/tests/test_photo_ui.py	46df3b1e068be99f788cf7fda3b61c65b40eb002	plugin/tests/test_photo_ui.py	adapté/extrait
@@ -115,4 +115,4 @@ QGIS-01	plugin/tests/test_report_data.py	075b1f5ad5c09bbb80c864ec495542f1072715b
 QGIS-01	plugin/tests/test_report_dialog_export.py	85b82a54c96431674a12e716b71e2a94ddcc7601	plugin/tests/test_report_dialog_export.py	adapté/extrait
 QGIS-01	plugin/tests/test_report_maps.py	7193205d351de51c4dc9c1611f84e43e928f8227	plugin/tests/test_report_maps.py	identique
 QGIS-01	plugin/tests/test_session_data.py	1d9bde2cada7c76b04f8abb28455b45c163ee497	plugin/tests/test_session_data.py	identique
-QGIS-01	plugin/tools/build_plugin.py	aac1a0420d6bc64052b5a7209d26cb780d45f69d	plugin/tools/build_plugin.py	identique
+QGIS-01	plugin/tools/build_plugin.py	aac1a0420d6bc64052b5a7209d26cb780d45f69d	plugin/tools/build_plugin.py	adapté pour PUBLICATION-01

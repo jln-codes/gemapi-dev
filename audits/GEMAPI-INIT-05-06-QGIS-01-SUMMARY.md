@@ -1,5 +1,7 @@
 # Bilan du lot INIT-05, INIT-06 et QGIS-01
 
+> Recette historique avant préparation publique. Les empreintes et références Git ci-dessous décrivent le lot initial. Le logo fictif, la licence du plugin, le nouveau ZIP et la correspondance des commits sont documentés dans [PUBLICATION-01](GEMAPI-PUBLICATION-01.md).
+
 Le clone de gemapi-dev fournit le modèle patrimonial v0.6.1, sa démonstration fictive, le plugin GEMAPI-App 0.8.6 et le générateur du projet QGIS de référence. Le modèle peut être installé dans un schéma choisi au déploiement. La webapp continue de servir Carte, Base et le shell PWA. Les accès métier web restent fermés en attendant l’identité et les chantiers fonctionnels.
 
 ## Sources et organisation

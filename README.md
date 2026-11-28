@@ -36,3 +36,7 @@ qualification figurent dans `audits/`.
 ## Modèle, démonstration et QGIS
 
 Le produit partage le modèle patrimonial v0.6.1 entre la webapp et le plugin QGIS. La maintenance SQL et la reconstruction de la démo sont explicites. Voir [l’installation et les permissions](model/README.md), [la reconstruction de la démonstration](demo/README.md) et [le plugin et le projet QGIS](plugin/README.md).
+
+## Licences
+
+Le socle web dérivé de Digues App relève de la licence Apache 2.0. L’extension QGIS GEMAPI-App est diffusée sous GPL-2.0-or-later pour ses apports originaux. Les composants tiers conservent leurs licences et attributions. [Licence du socle](LICENSE) · [Mentions](NOTICE) · [Licence incluse dans le ZIP du plugin](plugin/gemapi_app/LICENSE)

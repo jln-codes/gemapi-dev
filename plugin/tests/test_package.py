@@ -50,6 +50,12 @@ class PackageTests(unittest.TestCase):
                                  {"gemapi_app"})
                 self.assertEqual(set(names),
                                  {f"{build.PACKAGE_NAME}/{name}" for name in build.REQUIRED_FILES})
+                self.assertIn(b"SPDX-License-Identifier: GPL-2.0-or-later",
+                              package.read("gemapi_app/LICENSE"))
+                self.assertIn(b"Version 2, June 1991", package.read("gemapi_app/COPYING"))
+                self.assertIn(b"license=GPL-2.0-or-later", package.read("gemapi_app/metadata.txt"))
+                logo = package.read("gemapi_app/assets/logo_institutionnel.webp")
+                self.assertEqual((logo[:4], logo[8:12]), (b"RIFF", b"WEBP"))
                 self.assertIn(f"{build.PACKAGE_NAME}/help.md", names)
                 self.assertIn(b"Cr\xc3\xa9er une prestation",
                               package.read(f"{build.PACKAGE_NAME}/help.md"))

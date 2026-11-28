@@ -1,0 +1,18 @@
+GEMAPI-App for QGIS
+Author credit: SIG Milieux
+SPDX-License-Identifier: GPL-2.0-or-later
+
+The original code of this plugin, its original forms, documentation and
+original artwork are free software. You may redistribute and/or modify them
+under the GNU General Public License as published by the Free Software
+Foundation, either version 2 of the License, or (at your option) any later
+version. This includes the fictional institutional mark used in the reports.
+
+The plugin is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY, including the implied warranties of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See COPYING for the full text of version 2.
+
+QGIS, PyQt, Qt and GDAL are supplied by the QGIS installation and retain
+their own licenses. External services and map attributions retain their own
+terms. For combinations with GPLv3 PyQt, the later-version option permits
+use under GPLv3.

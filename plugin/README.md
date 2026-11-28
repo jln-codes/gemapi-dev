@@ -7,7 +7,7 @@ Cette extension utilise le modèle v0.6.1 et le projet fictif de référence. Le
 Depuis la racine du dépôt, exécuter `python3 plugin/tools/build_plugin.py`, puis installer
 `plugin/dist/gemapi-app-0.8.6.zip` dans **Extensions > Installer/Gérer les
 extensions > Installer depuis un ZIP**. Le plugin n'ajoute aucune dépendance
-Python externe : PyQGIS, Qt et la bibliothèque standard suffisent. Le script
+Python externe : il utilise PyQGIS, Qt via qgis.PyQt, les liaisons GDAL de QGIS et la bibliothèque standard. Le script
 contrôle les fonctions requises et vérifie que chaque fichier du ZIP correspond
 aux sources, sans transformation de namespace.
 
@@ -50,7 +50,11 @@ La génération utilise le modèle QGZ versionné et le mécanisme XML/ZIP du do
 
 Les actions de couche donnent accès aux sections et aux repères de digue. Les formulaires contrôlent les droits SQL et les révisions. Les enfants de sites sont directement rattachés par les widgets relationnels. Les conditions de qualification du support et de calcul de la géométrie figurent dans [la documentation démo](../demo/README.md). Les références cartographiques, styles, relations et chemins de connexion à traiter pour QGIS-02 sont inventoriés dans [l’audit QGIS-01](../audits/GEMAPI-QGIS-01.md).
 
-Le logo institutionnel CABBALR utilisé par les rapports est la ressource d’origine `gemapi_app/assets/logo_cabbalr.webp`. L’icône du plugin, les crédits IGN des rapports et l’identité graphique web restent distincts.
+Les rapports utilisent le logo fictif « Bassin pilote – Service des eaux », livré dans `gemapi_app/assets/logo_institutionnel.webp`.
+
+## Licence du plugin
+
+Le ZIP contient la notice GPL-2.0-or-later et le texte intégral de la GPL version 2. Les bibliothèques de l’installation QGIS et le socle web ont leurs propres licences. [Notice du plugin](gemapi_app/LICENSE) · [Texte de la GPL](gemapi_app/COPYING) · [Périmètres et dépendances](../audits/GEMAPI-PUBLICATION-01.md)
 
 ### Relations et widgets
 

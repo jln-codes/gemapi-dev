@@ -14,4 +14,6 @@ GEMAPI-App 0.8.6 (SIG Milieux) and the model, demonstration and QGIS
 project are derived from gemapi-app-sirs at
 90bf36947be15f834905f20f73148adc9c45d197. See audits/GEMAPI-QGIS-01.md
 and the transfer inventory for the original paths and modifications.
-The institutional CABBALR logo and map provider attributions are retained.
+The original QGIS plugin code is licensed under GPL-2.0-or-later. See
+plugin/gemapi_app/LICENSE and plugin/gemapi_app/COPYING. The reports use a
+fictional institutional mark. Map provider attributions remain in place.

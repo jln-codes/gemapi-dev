@@ -68,7 +68,7 @@ dépassé, réessayer le message. Les appels Mistral ne bloquent pas la fenêtre
 
 # Aide — GEMAPI-App
 
-Le plugin permet de créer, consulter, modifier et supprimer les prestations réalisées sur les cours d'eau, digues, aménagements hydrauliques et sites terrestres de la CABBALR, ainsi que de produire des rapports PDF selon les droits PostgreSQL du compte connecté.
+Le plugin permet de créer, consulter, modifier et supprimer les prestations réalisées sur les cours d'eau, digues, aménagements hydrauliques et sites terrestres, ainsi que de produire des rapports PDF selon les droits PostgreSQL du compte connecté.
 
 La description est proposée dans la même analyse : elle conserve les précisions
 métier complémentaires, sans répéter les champs structurés. Elle reste modifiable

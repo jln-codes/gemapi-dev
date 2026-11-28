@@ -1,6 +1,6 @@
 # gemapi-dev — Feuille de route de dérivation
 
-**Lot autorisé.** INIT-00 à 04 sont validés et clos à `e0240ff`. La livraison `90bf36947be15f834905f20f73148adc9c45d197` ouvre 05, 06 et QGIS-01. Arrêt après leurs audits et leur bilan. INIT-07, QGIS-02, la publication et le déploiement nécessitent un nouvel accord.
+**Lot en validation.** INIT-00 à 04 sont clos à `e0240ff`. INIT-05, INIT-06 et QGIS-01 ont intégré la livraison `90bf36947be15f834905f20f73148adc9c45d197`. PUBLICATION-01 prépare la publication locale. La mise en ligne, le déploiement et les chantiers suivants restent soumis à validation.
 
 La webapp desktop/PWA et QGIS partagent le modèle SQL, sa démo et les référentiels. Les parcours peuvent évoluer indépendamment. Chaque instance utilise une seule connexion métier et un seul schéma configurable au déploiement. La démo permanente sur gemapi.dev et les productions indépendantes partagent le code. L’accueil sera un écran de connexion simple. La configuration propre à la démo pourra préremplir ses identifiants web de démonstration. Les comptes de production et les secrets PostgreSQL du backend sont exclus. Aucune sélection d’environnement, découverte, administration ou sélection de bases. Le migrateur reste externe. L’authentification web définitive reste différée.
 
@@ -8,10 +8,12 @@ La cible 05 accepte un schéma vide attribué dans une base partagée. La qualif
 
 | Filière QGIS | Acceptation |
 |---|---|
-| QGIS-01, autorisé après 06 | Reprendre le plugin 0.8.6, reconstruire le ZIP, générer le projet de référence et tester sous PyQGIS les couches, relations, widgets, éditions, rapports, exports et droits sur la démo. |
+| QGIS-01, réalisé | Reprendre le plugin 0.8.6, reconstruire le ZIP, générer le projet de référence et tester sous PyQGIS les couches, relations, widgets, éditions, rapports, exports et droits sur la démo. |
 | QGIS-02, différé | Adapter connexions et schémas dans les couches, widgets, plugin et générateur. Décider avec le SIG de la connexion directe au réel. |
 | QGIS-03, différé | Distribuer le ZIP et le QGZ configuré depuis la webapp pour l’unique environnement de l’instance. Exclure les secrets du backend. |
 | QGIS-04, différé | Qualifier les échanges et l’interopérabilité webapp/QGIS sur le même modèle. |
+
+**Évolution différée des rapports.** Chaque installation de production pourra fournir son propre logo institutionnel. Le fichier sera stocké hors du dépôt Git. Le logo fictif fourni sert de valeur par défaut. Les modalités de configuration seront définies dans un chantier ultérieur.
 
 Cette filière peut avancer en parallèle des futurs chantiers métier web après autorisation.
 
