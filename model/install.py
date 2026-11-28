@@ -39,7 +39,8 @@ def render(source, schema, roles=()):
         if word in names:
             return names[word]
         # Seules ces deux instructions dynamiques utilisent le nom du schéma.
-        if word.startswith(("'CREATE TRIGGER tr_stamp_%I ", "'CREATE INDEX %I ")):
+        if (word.startswith(("'CREATE TRIGGER tr_stamp_%I ", "'CREATE INDEX %I "))
+                and source.endswith("EXECUTE format(", 0, match.start())):
             return literal(word[1:-1].replace("''", "'").replace("gemapi.", names["gemapi"].replace("%", "%%") + "."))
         return word
 

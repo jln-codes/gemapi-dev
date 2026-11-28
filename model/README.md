@@ -2,7 +2,7 @@
 
 PostgreSQL 16+, PostGIS 3.3+, Python 3 et le client `psql`. Configurer séparément `PGHOST`, `PGPORT`, `PGUSER`, TLS et, si nécessaire, un fichier de mots de passe privé. Le DBA installe PostGIS une fois, dans le schéma de son choix. Il réserve les droits CREATE des schémas métier et PostGIS à leurs propriétaires de confiance. Sur une ancienne installation où PUBLIC a CREATE sur public, le DBA examine les impacts avant de changer les ACL.
 
-Le compte d’installation est propriétaire du schéma vide confié par le DBA. Une destination absente demande CREATE sur la base. L’installation refuse les objets déjà présents, conserve les objets tiers et annule entièrement les changements en cas d’erreur.
+Le DBA peut attribuer un schéma vide au compte d’installation. Ce propriétaire installe les objets sans CREATE sur la base. Une destination absente demande CREATE sur la base. L’installation refuse les objets déjà présents, conserve les objets tiers et annule entièrement les changements en cas d’erreur.
 
 ```sh
 python3 model/install.py install --database territoire --schema "Patrimoine SIG"
