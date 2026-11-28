@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ReportDialog</class>
+ <widget class="QDialog" name="ReportDialog">
+  <property name="windowTitle"><string>GEMAPI-App — Créer un rapport</string></property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item><widget class="QLabel" name="titleLabel"><property name="text"><string>Registre de prestations</string></property></widget></item>
+   <item><widget class="QLabel" name="hintLabel"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Plusieurs valeurs d'un critère se cumulent par OU ; les critères distincts par ET. Seul le statut « Terminé » désigne une prestation complétée.</string></property></widget></item>
+   <item><widget class="QScrollArea" name="filterScroll"><property name="widgetResizable"><bool>true</bool></property><widget class="QWidget" name="filterHost"><layout class="QGridLayout" name="filterGrid"/></widget></widget></item>
+   <item><layout class="QGridLayout" name="groupGrid">
+    <item row="0" column="0"><widget class="QLabel" name="reportKindLabel"><property name="text"><string>Type de rapport</string></property></widget></item>
+    <item row="0" column="1"><widget class="QLabel" name="group1Label"><property name="text"><string>Niveau 1</string></property></widget></item>
+    <item row="0" column="2"><widget class="QLabel" name="group2Label"><property name="text"><string>Niveau 2</string></property></widget></item>
+    <item row="0" column="3"><widget class="QLabel" name="group3Label"><property name="text"><string>Niveau 3</string></property></widget></item>
+    <item row="1" column="0"><widget class="QComboBox" name="reportKindCombo"/></item>
+    <item row="1" column="1"><widget class="QComboBox" name="group1Combo"/></item>
+    <item row="1" column="2"><widget class="QComboBox" name="group2Combo"/></item>
+    <item row="1" column="3"><widget class="QComboBox" name="group3Combo"/></item>
+   </layout></item>
+   <item><layout class="QHBoxLayout" name="optionsLayout">
+    <item><widget class="QLabel" name="completionLabel"><property name="text"><string>État d'achèvement</string></property></widget></item>
+    <item><widget class="QComboBox" name="completionCombo"/></item>
+    <item><spacer name="optionsSpacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>20</width><height>20</height></size></property></spacer></item>
+   </layout></item>
+   <item><layout class="QHBoxLayout" name="mapOptions">
+    <item><widget class="QLabel" name="mapBackgroundLabel"><property name="text"><string>Fond cartographique</string></property></widget></item>
+    <item><widget class="QComboBox" name="mapBackgroundCombo"/></item>
+   </layout></item>
+   <item><layout class="QHBoxLayout" name="actionsLayout">
+    <item><widget class="QPushButton" name="exportButton"><property name="text"><string>Générer le PDF</string></property></widget></item>
+    <item><widget class="QPushButton" name="backButton"><property name="text"><string>Retour à l'accueil</string></property></widget></item>
+   </layout></item>
+   <item><widget class="QLabel" name="summaryLabel"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Calcul des prestations correspondantes…</string></property></widget></item>
+   <item><widget class="QLabel" name="statusLabel"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Lecture seule : aucun changement dans PostgreSQL.</string></property></widget></item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

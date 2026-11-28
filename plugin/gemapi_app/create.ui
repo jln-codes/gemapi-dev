@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0"><class>PrestationDialog</class><widget class="QDialog" name="PrestationDialog">
+ <property name="windowTitle"><string>Prestation — GEMAPI-App</string></property>
+ <layout class="QVBoxLayout" name="verticalLayout">
+  <property name="leftMargin"><number>6</number></property>
+  <property name="rightMargin"><number>6</number></property>
+  <item><widget class="QScrollArea" name="formScroll"><property name="widgetResizable"><bool>true</bool></property>
+   <widget class="QWidget" name="formContents"><layout class="QVBoxLayout" name="formLayout">
+    <property name="leftMargin"><number>0</number></property>
+    <property name="rightMargin"><number>0</number></property>
+    <item><widget class="QGroupBox" name="geometryGroup"><property name="title"><string>Géométrie de la prestation</string></property>
+     <layout class="QVBoxLayout" name="geometryLayout">
+      <item><widget class="QLabel" name="geometryStatusLabel"><property name="text"><string>Aucune géométrie dessinée</string></property></widget></item>
+      <item><layout class="QHBoxLayout" name="geometryActions">
+       <item><widget class="QPushButton" name="pointButton"><property name="text"><string>Point</string></property></widget></item>
+       <item><widget class="QPushButton" name="lineButton"><property name="text"><string>Ligne</string></property></widget></item>
+       <item><widget class="QPushButton" name="polygonButton"><property name="text"><string>Polygone</string></property></widget></item>
+       <item><widget class="QPushButton" name="removeGeometryButton"><property name="text"><string>Supprimer</string></property></widget></item>
+      </layout></item>
+      <item><layout class="QHBoxLayout" name="multipartActions">
+       <item><widget class="QPushButton" name="addPartButton"><property name="text"><string>Ajouter une partie</string></property></widget></item>
+       <item><widget class="QPushButton" name="removePartButton"><property name="text"><string>Retirer la dernière partie</string></property></widget></item>
+       <item><widget class="QPushButton" name="finishGeometryButton"><property name="text"><string>Terminer la géométrie</string></property></widget></item>
+      </layout></item>
+      <item><widget class="QLabel" name="geometryHintLabel"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Dessinez une première partie : clic pour un point, clics puis clic droit pour une ligne ou un polygone. « Ajouter une partie » poursuit la même prestation ; clic droit termine seulement cette partie. « Terminer la géométrie » confirme l’ensemble. Échap annule la partie en cours.</string></property></widget></item>
+     </layout></widget></item>
+    <item><widget class="QGroupBox" name="associationGroup"><property name="title"><string>Patrimoine concerné</string></property>
+     <layout class="QVBoxLayout" name="associationLayout">
+      <item><layout class="QHBoxLayout" name="associationControls">
+       <item stretch="60"><widget class="QLineEdit" name="searchEdit"><property name="minimumWidth"><number>160</number></property><property name="placeholderText"><string>Rechercher un objet par son nom</string></property></widget></item>
+       <item stretch="40"><layout class="QHBoxLayout" name="distanceLayout">
+        <item><widget class="QCheckBox" name="nearbyOnly"><property name="text"><string>Distance</string></property><property name="checked"><bool>false</bool></property></widget></item>
+        <item><widget class="QDoubleSpinBox" name="distanceSpin"><property name="minimum"><double>0.000000000000000</double></property><property name="maximum"><double>50000.000000000000000</double></property><property name="value"><double>500.000000000000000</double></property></widget></item>
+        <item><widget class="QComboBox" name="distanceUnitCombo"/></item>
+       </layout></item>
+      </layout></item>
+      <item><layout class="QHBoxLayout" name="associationLists">
+       <property name="spacing"><number>8</number></property>
+       <item stretch="42"><layout class="QVBoxLayout" name="candidateColumn">
+        <item><widget class="QLabel" name="candidateLabel"><property name="text"><string>Patrimoines candidats</string></property></widget></item>
+        <item><widget class="QListWidget" name="objectList"><property name="minimumHeight"><number>145</number></property><property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="selectionMode"><enum>QAbstractItemView::ExtendedSelection</enum></property></widget></item>
+       </layout></item>
+       <item stretch="16"><layout class="QVBoxLayout" name="associationActions">
+        <item><spacer name="actionsTopSpacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>0</width><height>20</height></size></property></spacer></item>
+        <item><widget class="QPushButton" name="addButton"><property name="text"><string>Ajouter →</string></property><property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property></widget></item>
+        <item><widget class="QPushButton" name="locateButton"><property name="text"><string>Localiser</string></property><property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property></widget></item>
+        <item><widget class="QPushButton" name="removeButton"><property name="text"><string>← Retirer</string></property><property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Fixed"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property></widget></item>
+        <item><spacer name="actionsBottomSpacer"><property name="orientation"><enum>Qt::Vertical</enum></property><property name="sizeHint" stdset="0"><size><width>0</width><height>20</height></size></property></spacer></item>
+       </layout></item>
+       <item stretch="42"><layout class="QVBoxLayout" name="selectedColumn">
+        <item><widget class="QLabel" name="selectedLabel"><property name="text"><string>Rattachements retenus</string></property></widget></item>
+        <item><widget class="QListWidget" name="selectedList"><property name="minimumHeight"><number>145</number></property><property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy></property><property name="selectionMode"><enum>QAbstractItemView::ExtendedSelection</enum></property></widget></item>
+       </layout></item>
+      </layout></item>
+     </layout></widget></item>
+    <item><widget class="QGroupBox" name="detailsGroup"><property name="title"><string>3 — Informations métier</string></property>
+     <layout class="QGridLayout" name="detailsLayout">
+      <property name="horizontalSpacing"><number>4</number></property>
+      <item row="0" column="0" colspan="2"><widget class="QLabel" name="typeLabel"><property name="text"><string>Type de prestation *</string></property></widget></item>
+      <item row="0" column="2" colspan="2"><widget class="QLabel" name="prestataireLabel"><property name="text"><string>Prestataire *</string></property></widget></item>
+      <item row="1" column="0" colspan="2"><widget class="TypePicker" name="typeCombo"/></item>
+      <item row="1" column="2" colspan="2"><widget class="QComboBox" name="prestataireCombo"/></item>
+      <item row="2" column="0"><widget class="QLabel" name="statutLabel"><property name="text"><string>Statut *</string></property></widget></item>
+      <item row="2" column="1"><widget class="QLabel" name="debutLabel"><property name="text"><string>Date de début *</string></property></widget></item>
+      <item row="2" column="2"><widget class="QLabel" name="finLabel"><property name="text"><string>Date de fin *</string></property><property name="toolTip"><string>Date prévisionnelle possible</string></property></widget></item>
+      <item row="2" column="3"><widget class="QLabel" name="technicienLabel"><property name="text"><string>Technicien responsable *</string></property></widget></item>
+      <item row="3" column="0"><widget class="QComboBox" name="statutCombo"/></item>
+      <item row="3" column="1"><widget class="QDateEdit" name="debutDate"><property name="calendarPopup"><bool>true</bool></property><property name="displayFormat"><string>dd/MM/yyyy</string></property></widget></item>
+      <item row="3" column="2"><widget class="QDateEdit" name="finDate"><property name="calendarPopup"><bool>true</bool></property><property name="displayFormat"><string>dd/MM/yyyy</string></property></widget></item>
+      <item row="3" column="3"><widget class="QComboBox" name="technicienCombo"/></item>
+      <item row="4" column="0" colspan="2"><widget class="QLabel" name="positionLabel"><property name="text"><string>Position</string></property></widget></item>
+      <item row="4" column="2" colspan="2"><widget class="QLabel" name="riveLabel"><property name="text"><string>Rive concernée</string></property></widget></item>
+      <item row="5" column="0" colspan="2"><widget class="QComboBox" name="positionCombo"/></item>
+      <item row="5" column="2" colspan="2"><widget class="QComboBox" name="riveCombo"/></item>
+      <item row="6" column="0" colspan="4"><layout class="QHBoxLayout" name="amountLayout">
+       <item stretch="6"><layout class="QVBoxLayout" name="intituleLayout"><item><widget class="QLabel" name="intituleLabel"><property name="text"><string>Intitulé (facultatif)</string></property></widget></item><item><widget class="QLineEdit" name="intituleEdit"/></item></layout></item>
+       <item stretch="2"><layout class="QVBoxLayout" name="quantiteLayout"><item><widget class="QLabel" name="quantiteLabel"><property name="text"><string>Quantité</string></property></widget></item><item><widget class="QLineEdit" name="quantiteEdit"/></item></layout></item>
+       <item stretch="2"><layout class="QVBoxLayout" name="uniteLayout"><item><widget class="QLabel" name="uniteLabel"><property name="text"><string>Unité</string></property></widget></item><item><widget class="QLineEdit" name="uniteEdit"/></item></layout></item>
+      </layout></item>
+      <item row="7" column="0" colspan="4"><widget class="QLabel" name="descriptionLabel"><property name="text"><string>Description (facultative)</string></property></widget></item>
+      <item row="8" column="0" colspan="4"><widget class="QPlainTextEdit" name="descriptionEdit"><property name="maximumHeight"><number>85</number></property><property name="placeholderText"><string>Description facultative</string></property></widget></item>
+     </layout></widget></item>
+    <item><widget class="QGroupBox" name="photosGroup"><property name="title"><string>4 — Photographies et commentaires (facultatifs)</string></property>
+     <layout class="QHBoxLayout" name="photosLayout">
+      <item><layout class="QVBoxLayout" name="photo1Layout">
+       <item><widget class="QLabel" name="photo1Title"><property name="text"><string>Photographie 1</string></property></widget></item>
+       <item><widget class="QLabel" name="photo1Preview"><property name="minimumHeight"><number>220</number></property><property name="maximumHeight"><number>260</number></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="text"><string>Aucune photographie</string></property></widget></item>
+       <item><layout class="QHBoxLayout" name="photo1Actions">
+        <item stretch="3"><widget class="QPushButton" name="photo1Button"><property name="text"><string>Choisir photo</string></property></widget></item>
+        <item stretch="1"><widget class="QPushButton" name="photo1Remove"><property name="text"><string>Supprimer</string></property><property name="toolTip"><string>Retirer le lien vers la photographie 1, sans supprimer le fichier</string></property></widget></item>
+       </layout></item>
+       <item><widget class="QLineEdit" name="photo1Comment"><property name="placeholderText"><string>Commentaire de la photo 1</string></property></widget></item>
+      </layout></item>
+      <item><layout class="QVBoxLayout" name="photo2Layout">
+       <item><widget class="QLabel" name="photo2Title"><property name="text"><string>Photographie 2</string></property></widget></item>
+       <item><widget class="QLabel" name="photo2Preview"><property name="minimumHeight"><number>220</number></property><property name="maximumHeight"><number>260</number></property><property name="alignment"><set>Qt::AlignCenter</set></property><property name="text"><string>Aucune photographie</string></property></widget></item>
+       <item><layout class="QHBoxLayout" name="photo2Actions">
+        <item stretch="3"><widget class="QPushButton" name="photo2Button"><property name="text"><string>Choisir photo</string></property></widget></item>
+        <item stretch="1"><widget class="QPushButton" name="photo2Remove"><property name="text"><string>Supprimer</string></property><property name="toolTip"><string>Retirer le lien vers la photographie 2, sans supprimer le fichier</string></property></widget></item>
+       </layout></item>
+       <item><widget class="QLineEdit" name="photo2Comment"><property name="placeholderText"><string>Commentaire de la photo 2</string></property></widget></item>
+      </layout></item>
+     </layout></widget></item>
+   </layout></widget></widget></item>
+  <item><widget class="QLabel" name="statusLabel"><property name="wordWrap"><bool>true</bool></property><property name="text"><string>Choisissez un patrimoine porteur. Une géométrie propre est requise pour les cours d'eau, les digues, les sections AH et les sites terrestres parents.</string></property></widget></item>
+  <item><layout class="QHBoxLayout" name="bottomActions">
+   <item><widget class="QPushButton" name="saveButton"><property name="text"><string>Enregistrer la prestation</string></property></widget></item>
+   <item><widget class="QPushButton" name="reloadButton"><property name="text"><string>Recharger la fiche</string></property></widget></item>
+   <item><widget class="QPushButton" name="backButton"><property name="text"><string>Retour à la gestion</string></property></widget></item>
+  </layout></item>
+ </layout></widget><customwidgets><customwidget><class>TypePicker</class><extends>QComboBox</extends><header>gemapi_app.type_picker</header></customwidget></customwidgets><resources/><connections/></ui>
