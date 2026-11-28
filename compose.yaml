@@ -3,6 +3,7 @@ services:
   app:
     build: .
     environment:
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA:-gemapi}
       DATABASE_URL: ${DATABASE_URL:-}
       DATABASE_READONLY_URL: ${DATABASE_READONLY_URL:-}
       DATABASE_AI_READONLY_URL: ${DATABASE_AI_READONLY_URL:-}

@@ -43,13 +43,18 @@ class PostgreSQLConfig:
 
     dsn: str
     connect_timeout: int = 10
+    schema: str = "gemapi"
 
     @classmethod
     def from_env(cls) -> "PostgreSQLConfig":
         dsn = os.getenv("DATABASE_URL", "").strip()
         if not dsn:
             raise WebDatabaseConfigurationError("DATABASE_URL doit être renseignée.")
-        return cls(dsn)
+        schema = os.getenv("DATABASE_SCHEMA", "gemapi")
+        if (not schema or len(schema.encode()) > 63 or "\x00" in schema
+                or schema.startswith("pg_") or schema == "information_schema"):
+            raise WebDatabaseConfigurationError("DATABASE_SCHEMA invalide.")
+        return cls(dsn, schema=schema)
 
     def connect_kwargs(self, *, autocommit: bool = True) -> dict[str, Any]:
         return {
@@ -290,6 +295,8 @@ def _connection(config, *, read_only, prepare):
         except Exception:
             connection.close()
             raise
+    except WebDatabaseSchemaError:
+        raise
     except Exception:
         raise WebDatabaseError("Connexion PostgreSQL indisponible ou non conforme.") from None
     try:
@@ -298,14 +305,59 @@ def _connection(config, *, read_only, prepare):
         connection.close()
 
 
+# Empreinte des relations et colonnes v0.6.1 issue de l'installation témoin.
+# Les OID de types dépendent de chaque installation de PostGIS.
+MODEL_SIGNATURE = "0b6e72503516fe62a10bdd80ee76f4cb"
+MODEL_STRUCTURE = """
+    SELECT md5(string_agg(concat_ws('|', c.relkind, c.relname, a.attnum, a.attname,
+           t.typname, a.atttypmod, a.attnotnull, a.attgenerated), E'\\n'
+           ORDER BY c.relname COLLATE "C", a.attnum)),
+           bool_and(has_table_privilege(c.oid, 'SELECT'))
+    FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+    JOIN pg_catalog.pg_attribute a ON a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped
+    JOIN pg_catalog.pg_type t ON t.oid=a.atttypid
+    WHERE n.nspname=%s AND c.relkind IN ('r','v','p','m','f')
+"""
+
+
+def prepare_model(cursor, schema):
+    """Diagnostic en lecture seule, également utilisé par les connexions métier."""
+    cursor.execute("SET search_path = pg_catalog, pg_temp")
+    cursor.execute("""
+        SELECT x.nspname, n.oid, has_schema_privilege(n.oid,'USAGE'),
+               has_schema_privilege(x.oid,'USAGE')
+        FROM pg_catalog.pg_extension e JOIN pg_catalog.pg_namespace x ON x.oid=e.extnamespace
+        LEFT JOIN pg_catalog.pg_namespace n ON n.nspname=%s WHERE e.extname='postgis'
+    """, (schema,))
+    status = cursor.fetchone()
+    if not status:
+        raise WebDatabaseSchemaError("Extension PostGIS absente.")
+    extension, oid, usage, extension_usage = status
+    if oid is None:
+        raise WebDatabaseSchemaError("Schéma applicatif absent.")
+    if not usage or not extension_usage:
+        raise WebDatabaseSchemaError("Droit USAGE manquant pour le modèle ou PostGIS.")
+    cursor.execute(MODEL_STRUCTURE, (schema,))
+    fingerprint, readable = cursor.fetchone()
+    if fingerprint != MODEL_SIGNATURE:
+        raise WebDatabaseSchemaError("Structure du modèle incompatible avec la v0.6.1.")
+    if not readable:
+        raise WebDatabaseSchemaError("Droit de consultation du modèle incomplet.")
+    cursor.execute("SELECT pg_catalog.set_config('search_path', %s, false)",
+                   (", ".join(map(quote_identifier, ("pg_catalog", extension, schema, "pg_temp"))),))
+
+
+def _model_connection(read_only):
+    config = PostgreSQLConfig.from_env()
+    return _connection(config, read_only=read_only, prepare=lambda c: prepare_model(c, config.schema))
+
+
 def open_read_connection():
-    return _connection(PostgreSQLConfig.from_env(), read_only=True,
-                       prepare=configure_extension_search_path)
+    return _model_connection(True)
 
 
 def open_write_connection():
-    return _connection(PostgreSQLConfig.from_env(), read_only=False,
-                       prepare=configure_extension_search_path)
+    return _model_connection(False)
 
 
 def _open_restricted_connection(variable, validate_role):
@@ -367,3 +419,11 @@ def get_sql_connection() -> Iterator[Any]:
 
     with open_sql_connection() as connection:
         yield connection
+
+
+if __name__ == "__main__":
+    try:
+        with open_read_connection():
+            print("Modèle v0.6.1 et droits de lecture disponibles.")
+    except (WebDatabaseConfigurationError, WebDatabaseError, WebDatabaseSchemaError) as error:
+        raise SystemExit(str(error)) from None

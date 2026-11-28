@@ -1,0 +1,19 @@
+# INIT-05 — Installation du modèle v0.6.1
+
+Le donneur `gemapi-app-sirs` est propre à `90bf36947be15f834905f20f73148adc9c45d197`. La cible part de `e0240ffdf9093abf9b335f4ef3c4678d42da9b08` sur development. Le voisin digues-app est propre à `ebd35689262168a5f353ec7916176797e694b27f`, deux commits devant son suivi local. Son code n’intervient pas dans ce transfert.
+
+| Source sous model/ | Destination sous model/ | SHA-256 |
+|---|---|---|
+| schema_development_tables_v0.6.1.pdf | schema_v0.6.1.pdf | 2709bcbf1eb0d8be0e6f316dfcc14e8ec2fc8cb757e3220ebb7952bff54f3b9d |
+| schema.mmd | schema_v0.6.1.mmd | acb6ddf92ea02fe613eec553ea8614ba7a1ae49435fed81a14cbaf493a09b06d |
+| schema.sql | schema_v0.6.1.sql | 42b5f662485ea51d1ec8bc10af283fa1e49d272dcb814015bbf55fa1dd38bab8 |
+
+Les trois références sont identiques aux blobs donneurs. Le PDF de 70 pages conserve les qualifiants historiques milieux, public et referentiel et cite le Mermaid antérieur (98e87f43…). Son tableau p. 1 donne les effectifs de la v0.6.1. Le Mermaid transféré et le SQL placent les 48 tables dans le seul schéma applicatif. La documentation conserve cet écart. Les 22 tables métier, quatre associations et 22 référentiels donnent 431 colonnes. L’introspection confirme les 109 FK internes, zéro FK externe, six vues et 298 valeurs, vérifiées ligne à ligne contre le Mermaid. Les types géométriques imposent EPSG:3950. Les transformations génériques du socle restent disponibles. L’utilisation des anciennes métadonnées CRS Digues dans les handlers différés sera à revoir au raccordement.
+
+`model/install.py` remplace le préambule du donneur par une installation transactionnelle circonscrite au schéma. PostGIS est découvert, les paramètres SQL qualifiés, les deux instructions dynamiques et les chemins des fonctions sont rendus dans leur contexte. Un verrou de transaction sérialise les installations concurrentes dans la destination. La matrice de `model/roles_milieux.sql` est reprise depuis le donneur et sa documentation `role.md` est adaptée. L’installateur des objets applique les GRANT à trois groupes préexistants validés et nommés explicitement. L’administration du cluster et les futurs comptes web relèvent d’autorités distinctes.
+
+`tests/model/test_sirs_postgis.py` et `test_roles_postgres.py` proviennent de `plugin/tests/` du donneur. Le premier exerce la commande d’installation et la nouvelle référence Mermaid. Il conserve les assertions sur colonnes, types, nullabilité, PK, contraintes, clés uniques, index GiST, hiérarchie, catalogues, déclencheurs, transactions concurrentes, révisions et refus d’opérations.
+
+**Recette SQL.** 24 essais réussis avec PostgreSQL 16.15 et PostGIS 3.4.2, sur deux clusters temporaires sans TCP. Dans chacun, `gemapi` et une destination préexistante avec espace, apostrophe, guillemet, % et dollars coexistent. Le propriétaire du second schéma ne peut créer ni rôle ni base. Les vues isolent les données, les FK restent internes et la table témoin dans public conserve sa valeur. Un lecteur non propriétaire voit le modèle par le diagnostic backend. Le schéma absent, le modèle incompatible, le CREATE accordé à un tiers et la réinstallation occupée sont refusés. Le test de catalogue couvre chacune des deux implantations de PostGIS. Le shell web et l’arrêt des routes restent indépendants de ces contrôles. La recette intégrée du redémarrage figure dans le bilan du lot.
+
+Le DSN serveur et `DATABASE_SCHEMA` règlent la connexion. Le diagnostic compare l’empreinte physique des colonnes des tables et vues, et vérifie la possibilité de les lire. La comparaison détaillée des contraintes et des référentiels relève de la recette de maintenance. Les opérations métier web et les identités sont différées. [Installation](../model/README.md)

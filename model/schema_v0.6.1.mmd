@@ -1,0 +1,1003 @@
+%% SIG-FUSION-11 - Modèle v0.6.1, schéma applicatif unique gemapi
+%% Base v0.6 : feabcb8926bdc91e4d71fb90ebd3710b07b09d3e
+%% Source digues-app/development : eecec0a44f25a908484b76f838a7e2be0c8cfee5
+erDiagram
+    direction TB
+
+    TECHNICIENS["gemapi.techniciens"] {
+        uuid id PK "NOT NULL"
+        text nom "NOT NULL"
+        text prenom "NULL; nullable"
+        text login UK "NULL; nullable"
+        boolean actif "NOT NULL"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    COMMUNES["gemapi.communes"] {
+        uuid id PK "NOT NULL"
+        text insee UK "NOT NULL"
+        text nom "NOT NULL"
+        geometry geom "NOT NULL; geometry(MultiPolygon,3950); MultiPolygon 3950"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    COURS_EAU["gemapi.cours_eau"] {
+        uuid id PK "NOT NULL"
+        text nom "NOT NULL; obligatoire; non blanc"
+        text type_ecoulement "NULL; nullable"
+        boolean direction "NULL; nullable; validation humaine"
+        integer section "NULL; calculé ST_NumGeometries"
+        boolean valide "NOT NULL; calculé direction IS TRUE et monosection"
+        text source "NOT NULL"
+        geometry geom "NOT NULL; geometry(MultiLineString,3950); MultiLineString 3950"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    AH["gemapi.ah"] {
+        uuid id PK "NOT NULL"
+        text nom "NOT NULL"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    AH_STOCKAGE["gemapi.ah_stockage"] {
+        uuid id PK "NOT NULL"
+        uuid ah_id FK,UK "NOT NULL"
+        text nom "NOT NULL"
+        text categorie "NULL; nullable"
+        numeric surface_ha "NULL; nullable"
+        geometry geom "NOT NULL; geometry(Polygon,3950); Polygon 3950 valide non vide"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    AH_OUVRAGE["gemapi.ah_ouvrage"] {
+        uuid id PK "NOT NULL"
+        uuid ah_id FK "NOT NULL"
+        text nom "NULL; nullable"
+        geometry geom "NOT NULL; geometry(LineString,3950); LineString 3950 valide non vide"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    AH_SECTIONS["gemapi.ah_sections"] {
+        uuid id PK "NOT NULL"
+        uuid ah_id FK "NOT NULL; parent obligatoire"
+        uuid cours_eau_id FK "NOT NULL; cours d'eau qualifié à la validation"
+        double debut_fraction "NOT NULL; 0 <= début < fin <= 1"
+        double fin_fraction "NOT NULL"
+        geometry geom_reference "NOT NULL; geometry(LineString,3950); LineString 3950 2D positive figée"
+        text geom_cours_eau_signature "NOT NULL; MD5 EWKB"
+        integer revision_validation "NOT NULL; 1 puis incrément explicite pour revalider"
+        text valide_par "NOT NULL; compte PostgreSQL"
+        timestamptz date_validation "NOT NULL"
+        text commentaire "NULL; nullable"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    SITES_TERRESTRES["gemapi.sites_terrestres"] {
+        uuid id PK "NOT NULL"
+        text nom "NOT NULL"
+        geometry geom "NOT NULL; geometry(Geometry,3950); MultiPolygon 3950 valide non vide"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    PRESTATAIRES["gemapi.prestataires"] {
+        uuid id PK "NOT NULL"
+        text nom "NOT NULL"
+        boolean actif "NOT NULL"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    PRESTATIONS_CATEGORIE["gemapi.prestations_categorie"] {
+        uuid id PK "NOT NULL"
+        text libelle UK "NOT NULL"
+        integer ordre "NOT NULL"
+    }
+
+    TYPES_PRESTATIONS["gemapi.types_prestations"] {
+        uuid categorie_id FK "NOT NULL"
+        uuid id PK "NOT NULL"
+        text code UK "NOT NULL"
+        text libelle "NOT NULL"
+        boolean actif "NOT NULL"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+    }
+
+    STATUTS_PRESTATIONS["gemapi.statuts_prestations"] {
+        uuid id PK "NOT NULL"
+        text code UK "NOT NULL"
+        text libelle UK "NOT NULL"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+    }
+
+    PRESTATIONS["gemapi.prestations"] {
+        uuid cours_eau_id FK "NULL; nullable"
+        uuid digue_id FK "NULL; nullable"
+        uuid troncon_id FK "NULL; nullable; geometrie propre obligatoire"
+        uuid ah_stockage_id FK "NULL; nullable"
+        uuid ah_ouvrage_id FK "NULL; nullable"
+        uuid ah_section_id FK "NULL; nullable; geometrie propre obligatoire"
+        uuid site_terrestre_id FK "NULL; nullable"
+        uuid id PK "NOT NULL"
+        text intitule "NULL; nullable"
+        uuid prestataire_id FK "NOT NULL"
+        uuid type_prestation_id FK "NOT NULL"
+        uuid statut_id FK "NOT NULL"
+        date date_debut "NOT NULL"
+        date date_fin "NOT NULL"
+        numeric quantite "NULL; nullable"
+        text unite "NULL; nullable"
+        text position "NOT NULL, défaut Indéfini ; cinq valeurs"
+        text rive "NOT NULL, défaut Indéfinie ; quatre valeurs"
+        text description "NULL; nullable"
+        text photo_1 "NULL; nullable"
+        text photo_1_commentaire "NULL; nullable"
+        text photo_2 "NULL; nullable"
+        text photo_2_commentaire "NULL; nullable"
+        geometry geom "NULL; geometry(Geometry,3950); 3950 2D; obligatoire cours d'eau, digue, troncon, site et section AH; Multi* sur site"
+        uuid technicien_id FK "NOT NULL"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        integer nombre_points "NULL; mesure enregistrée nullable"
+        double longueur_m "NULL; mesure enregistrée nullable"
+        double surface_m2 "NULL; mesure enregistrée nullable"
+        double surface_ha "NULL; générée depuis surface_m2"
+        text type_geometrie "NULL; mesure enregistrée nullable"
+        text type_geometrie_postgis "NULL; nullable"
+        boolean possede_geometrie "NOT NULL; calcul serveur"
+        text origine_mesures "NOT NULL; Prestation ou Patrimoine de rattachement ou Aucune géométrie"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        uuid mobilier_id FK "NULL; cible directe exclusive"
+        uuid cheminement_id FK "NULL; cible directe exclusive"
+        uuid vegetation_id FK "NULL; cible directe exclusive"
+    }
+
+    DIGUES["gemapi.digues"] {
+        uuid id PK "NOT NULL"
+        text nom "NOT NULL"
+        text identifiant_externe "NULL; nullable"
+        text commentaire "NULL; nullable"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    DIGUES_REPERES["gemapi.digues_reperes"] {
+        uuid id PK "NOT NULL"
+        uuid digue_id FK,UK "NOT NULL; un repère obligatoire par digue"
+        uuid riviere_id FK "NOT NULL"
+        text rive "NOT NULL; G ou D"
+        double debut_fraction "NOT NULL; 0..1"
+        double fin_fraction "NOT NULL; 0..1 ; debut < fin"
+        geometry geom_reference "NOT NULL; geometry(LineString,3950); LineString 3950 figee"
+        text geom_riviere_signature "NOT NULL"
+        integer revision_validation "NOT NULL; 1 puis +1 à chaque validation explicite"
+        text modifie_par "NULL; compte PostgreSQL"
+        timestamptz date_modification "NULL; nullable"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+    }
+
+    public__troncons["gemapi.troncons"] {
+        uuid id PK "NOT NULL"
+        text type_troncon_id FK "NOT NULL"
+        uuid digue_id FK "NOT NULL; gemapi.digues.id"
+        date date_debut "NULL"
+        date date_fin "NULL"
+        text commentaire "NULL"
+        text designation "NULL"
+        text type_rive_id FK "NULL"
+        text typologie_troncon_id FK "NULL"
+        geometry geometry "NULL; SQL geometry(Geometry,3950)"
+        geometry geometry_reperage "NULL; SQL geometry(LineString,3950)"
+        boolean valid "NOT NULL DEFAULT false"
+        bigint version "NOT NULL DEFAULT 1"
+        text source_id FK "NULL"
+        text cote_id FK "NULL"
+        text position_id FK "NULL"
+        text fonction_id FK "NULL"
+        text fonction_haut_id FK "NULL"
+        text fonction_bas_id FK "NULL"
+        text nature_id FK "NULL"
+        text nature_haut_id FK "NULL"
+        text nature_bas_id FK "NULL"
+        text materiau_id FK "NULL"
+        text materiau_haut_id FK "NULL"
+        text materiau_bas_id FK "NULL"
+        integer num_couche "NULL"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "NULL; session_user derniere ecriture"
+        timestamptz date_modification "NULL; clock_timestamp derniere ecriture"
+    }
+
+    public__desordres["gemapi.desordres"] {
+        uuid troncon_id FK "NULL"
+        uuid digue_id FK "NULL"
+        uuid ah_ouvrage_id FK "NULL"
+        uuid ah_section_id FK "NULL"
+        uuid ah_stockage_id FK "NULL"
+        uuid site_terrestre_id FK "NULL"
+        uuid id PK "NOT NULL"
+        text type_desordre_id FK "NULL"
+        text categorie_desordre_id FK "NULL"
+        text designation "NULL"
+        text commentaire "NULL"
+        text lieu_dit "NULL"
+        text cote_id FK "NULL"
+        text position_id FK "NULL"
+        text source_id FK "NULL"
+        date date_debut "NULL"
+        date date_fin "NULL"
+        geometry geometry "NULL; SQL geometry(Geometry,3950)"
+        boolean valid "NULL"
+        bigint version "NOT NULL DEFAULT 1"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        uuid mobilier_id FK "NULL; cible directe exclusive"
+        uuid cheminement_id FK "NULL; cible directe exclusive"
+        uuid vegetation_id FK "NULL; cible directe exclusive"
+        text modifie_par "NULL; session_user derniere ecriture"
+        timestamptz date_modification "NULL; clock_timestamp derniere ecriture"
+    }
+
+    public__observations["gemapi.observations"] {
+        uuid id PK "NOT NULL"
+        uuid desordre_id FK "NULL"
+        uuid troncon_id FK "NULL"
+        uuid ouvrage_hydraulique_id FK "NULL"
+        uuid equipement_mesure_id FK "NULL"
+        uuid cheminement_id FK "NULL"
+        uuid mobilier_id FK "NULL"
+        uuid vegetation_id FK "NULL"
+        uuid ouvrage_particulier_id FK "NULL"
+        text urgence_id FK "NULL"
+        text designation "NULL"
+        date date_observation "NOT NULL; date du constat, jamais inventee"
+        text evolution "NULL"
+        text suite "NULL"
+        text suite_apporter_id FK "NULL"
+        integer nombre_desordres "NULL"
+        boolean valid "NOT NULL DEFAULT false"
+        bigint version "NOT NULL DEFAULT 1"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "NULL; session_user derniere ecriture"
+        timestamptz date_modification "NULL; clock_timestamp derniere ecriture"
+        uuid ah_ouvrage_id FK "NULL; objet AH, correspondance explicite"
+        uuid ah_stockage_id FK "NULL; correspondance explicite"
+        uuid ah_section_id FK "NULL"
+        uuid site_terrestre_id FK "NULL; meme si le site possede des enfants"
+        text observateur "NULL; attribution metier documentaire, sans FK contacts"
+    }
+
+    public__photos["gemapi.photos"] {
+        uuid id PK "NOT NULL"
+        uuid observation_id FK "NOT NULL"
+        date date_photo "NULL"
+        text designation "NULL"
+        text commentaire "NULL"
+        boolean valid "NOT NULL DEFAULT false"
+        bigint version "NOT NULL DEFAULT 1"
+        text storage_key UK "NULL"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "NULL; session_user derniere ecriture"
+        timestamptz date_modification "NULL; clock_timestamp derniere ecriture"
+        text photographe "NULL; attribution documentaire, pas necessairement technicien"
+    }
+
+    public__ouvrages_particuliers["gemapi.ouvrages_particuliers"] {
+        uuid id PK "NOT NULL"
+        text designation "NULL"
+        text commentaire "NULL"
+        date date_debut "NULL"
+        date date_fin "NULL"
+        geometry geometry "NULL; SQL geometry(Geometry,3950)"
+        uuid troncon_id FK "NULL"
+        boolean valid "NOT NULL DEFAULT false"
+        bigint version "NOT NULL DEFAULT 1"
+        text type_id FK "NULL"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "NULL; session_user derniere ecriture"
+        timestamptz date_modification "NULL; clock_timestamp derniere ecriture"
+    }
+
+    public__equipements_mesure["gemapi.equipements_mesure"] {
+        uuid id PK "NOT NULL"
+        text type_id FK "NOT NULL"
+        text designation "NULL"
+        text commentaire "NULL"
+        date date_debut "NULL"
+        date date_fin "NULL"
+        text cote_id FK "NULL"
+        text position_id FK "NULL"
+        text source_id FK "NULL"
+        double_precision dimension_horizontale "NULL; SQL double precision"
+        double_precision dimension_verticale "NULL; SQL double precision"
+        geometry geometry "NULL; SQL geometry(Geometry,3950)"
+        uuid troncon_id FK "NULL"
+        boolean valid "NULL"
+        bigint version "NOT NULL DEFAULT 1"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "NULL; session_user derniere ecriture"
+        timestamptz date_modification "NULL; clock_timestamp derniere ecriture"
+    }
+
+    public__ouvrages_hydrauliques["gemapi.ouvrages_hydrauliques"] {
+        uuid id PK "NOT NULL"
+        text type_id FK "NULL"
+        text designation "NULL"
+        text commentaire "NULL"
+        date date_debut "NULL"
+        date date_fin "NULL"
+        geometry geometry "NULL; SQL geometry(Geometry,3950)"
+        uuid troncon_id FK "NULL"
+        uuid ah_ouvrage_id FK "NULL; gemapi.ah_ouvrage.id"
+        uuid ah_stockage_id FK "NULL; gemapi.ah_stockage.id"
+        boolean valid "NULL"
+        double_precision longueur "NULL; SQL double precision"
+        double_precision largeur_max "NULL; SQL double precision"
+        double_precision hauteur "NULL; SQL double precision"
+        integer annee_construction "NULL"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "NULL; session_user derniere ecriture"
+        timestamptz date_modification "NULL; clock_timestamp derniere ecriture"
+    }
+
+    public__equipements_mesure__desordres["gemapi.equipements_mesure__desordres"] {
+        uuid equipement_mesure_id PK, FK "NOT NULL"
+        uuid desordre_id PK, FK "NOT NULL"
+    }
+
+    public__ouvrages_hydrauliques__desordres["gemapi.ouvrages_hydrauliques__desordres"] {
+        uuid ouvrage_hydraulique_id PK, FK "NOT NULL"
+        uuid desordre_id PK, FK "NOT NULL"
+    }
+
+    public__ouvrages_particuliers__desordres["gemapi.ouvrages_particuliers__desordres"] {
+        uuid ouvrage_particulier_id PK, FK "NOT NULL"
+        uuid desordre_id PK, FK "NOT NULL"
+    }
+
+    public__ouvrages_hydrauliques__objets_lies["gemapi.ouvrages_hydrauliques__objets_lies"] {
+        uuid id PK "NOT NULL"
+        uuid ouvrage_hydraulique_id FK "NOT NULL"
+        uuid cheminement_id FK "NULL"
+        uuid autre_ouvrage_hydraulique_id FK "NULL"
+        uuid ouvrage_particulier_id FK "NULL"
+        uuid equipement_mesure_id FK "NULL"
+        uuid berge_id FK "NULL"
+        text berge_id_type FK "GENERATED ALWAYS AS ('BERGE'::text) STORED"
+        uuid digue_id FK "NULL"
+    }
+
+    referentiel__categories_desordre["gemapi.categories_desordre"] {
+        text id PK "NOT NULL"
+        text libelle "NULL"
+        text abrege "NULL"
+        text designation "NULL"
+    }
+
+    referentiel__cotes["gemapi.cotes"] {
+        text id PK "NOT NULL"
+        text designation "NULL"
+        text abrege "NULL"
+        text libelle "NULL"
+    }
+
+    referentiel__fonctions_structure["gemapi.fonctions_structure"] {
+        text id PK "NOT NULL"
+        text code UK "NULL"
+        text libelle "NOT NULL"
+        text designation "NULL"
+    }
+
+    referentiel__materiaux_structure["gemapi.materiaux_structure"] {
+        text id PK "NOT NULL"
+        text code UK "NULL"
+        text libelle "NOT NULL"
+        text designation "NULL"
+    }
+
+    referentiel__natures_structure["gemapi.natures_structure"] {
+        text id PK "NOT NULL"
+        text code UK "NULL"
+        text libelle "NOT NULL"
+        text designation "NULL"
+    }
+
+    referentiel__positions["gemapi.positions"] {
+        text id PK "NOT NULL"
+        text designation "NULL"
+        text abrege "NULL"
+        text libelle "NULL"
+    }
+
+    referentiel__rives["gemapi.rives"] {
+        text id PK "NOT NULL"
+        text designation "NULL"
+        text abrege "NULL"
+        text libelle "NULL"
+    }
+
+    referentiel__sources_information["gemapi.sources_information"] {
+        text id PK "NOT NULL"
+        text designation "NULL"
+        text abrege "NULL"
+        text libelle "NULL"
+    }
+
+    referentiel__suites_apporter["gemapi.suites_apporter"] {
+        text id PK "NOT NULL"
+        text designation "NULL"
+        text abrege "NULL"
+        text libelle "NULL"
+    }
+
+    referentiel__types_desordre["gemapi.types_desordre"] {
+        text id PK "NOT NULL"
+        text categorie_id FK "NULL"
+        text libelle "NULL"
+        text abrege "NULL"
+        text designation "NULL"
+    }
+
+    referentiel__types_equipement_mesure["gemapi.types_equipement_mesure"] {
+        text id PK "NOT NULL"
+        text code UK "NOT NULL"
+        text abrege UK "NOT NULL"
+        text libelle "NOT NULL"
+    }
+
+    referentiel__types_ouvrage_hydraulique["gemapi.types_ouvrage_hydraulique"] {
+        text id PK "NOT NULL"
+        text code UK "NOT NULL"
+        text abrege UK "NOT NULL"
+        text libelle "NOT NULL"
+    }
+
+    referentiel__types_ouvrage_particulier["gemapi.types_ouvrage_particulier"] {
+        text id PK "NOT NULL"
+        text code UK "NULL"
+        text libelle "NOT NULL"
+        text designation "NULL"
+    }
+
+    referentiel__types_troncon["gemapi.types_troncon"] {
+        text id PK "NOT NULL"
+        text code UK "NULL"
+        text libelle "NOT NULL"
+        text designation "NULL"
+    }
+
+    referentiel__typologies_troncon["gemapi.typologies_troncon"] {
+        text id PK "NOT NULL"
+        text designation "NULL"
+        text abrege "NULL"
+        text libelle "NULL"
+    }
+
+    referentiel__urgences["gemapi.urgences"] {
+        text id PK "NOT NULL"
+        text libelle "NULL"
+        text abrege "NULL"
+        text designation "NULL"
+    }
+
+    public__mobilier["gemapi.mobilier"] {
+        uuid id PK "NOT NULL DEFAULT gen_random_uuid()"
+        text designation "NOT NULL; non blanche"
+        text type_id FK "NOT NULL"
+        text commentaire "NULL"
+        date date_debut "NULL"
+        date date_fin "NULL"
+        geometry geometry "NOT NULL; Geometry 3950 2D valide non vide; Point/LineString/Polygon et Multi*"
+        uuid troncon_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_ouvrage_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid site_terrestre_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_stockage_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_section_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        boolean valid "NOT NULL DEFAULT false"
+        bigint version "NOT NULL DEFAULT 1; conserve"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "compte PostgreSQL"
+        timestamptz date_modification "nullable"
+    }
+
+    public__cheminements["gemapi.cheminements"] {
+        uuid id PK "NOT NULL DEFAULT gen_random_uuid()"
+        text designation "NOT NULL; non blanche"
+        text type_cheminement_id FK "NOT NULL"
+        text commentaire "NULL"
+        date date_debut "NULL"
+        date date_fin "NULL"
+        geometry geometry "NOT NULL; Geometry 3950 2D valide non vide; Point/LineString/Polygon et Multi*"
+        uuid troncon_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_ouvrage_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid site_terrestre_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_stockage_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_section_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        boolean valid "NOT NULL DEFAULT false"
+        bigint version "NOT NULL DEFAULT 1; conserve"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "compte PostgreSQL"
+        timestamptz date_modification "nullable"
+    }
+
+    public__vegetation["gemapi.vegetation"] {
+        uuid id PK "NOT NULL DEFAULT gen_random_uuid()"
+        text designation "NOT NULL; non blanche"
+        text famille_vegetation FK "NOT NULL"
+        text commentaire "NULL"
+        date date_debut "NULL"
+        date date_fin "NULL"
+        geometry geometry "NOT NULL; Geometry 3950 2D valide non vide; Point/LineString/Polygon et Multi*"
+        uuid troncon_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_ouvrage_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid site_terrestre_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_stockage_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        uuid ah_section_id FK "NULL; un parent parmi cinq, ON DELETE RESTRICT"
+        boolean valid "NOT NULL DEFAULT false"
+        bigint version "NOT NULL DEFAULT 1; conserve"
+        timestamptz cree_le "NOT NULL DEFAULT clock_timestamp(); immuable apres insertion"
+        text modifie_par "compte PostgreSQL"
+        timestamptz date_modification "nullable"
+    }
+
+    referentiel__types_mobilier["gemapi.types_mobilier"] {
+        text id PK "NOT NULL"
+        text code UK "NOT NULL"
+        text abrege UK "NOT NULL"
+        text libelle "NOT NULL"
+    }
+
+    referentiel__types_cheminement["gemapi.types_cheminement"] {
+        text id PK "NOT NULL"
+        text code UK "NOT NULL"
+        text abrege UK "NOT NULL"
+        text libelle "NOT NULL"
+    }
+
+    referentiel__familles_vegetation["gemapi.familles_vegetation"] {
+        text id PK "NOT NULL"
+        text code UK "NOT NULL"
+        text libelle "NOT NULL"
+        text designation "NULL"
+    }
+
+    PRESTATIONS_CATEGORIE ||..o{ TYPES_PRESTATIONS : regroupe
+    TECHNICIENS ||..o{ PRESTATIONS : responsable
+    PRESTATAIRES ||..o{ PRESTATIONS : realise
+    TYPES_PRESTATIONS ||..o{ PRESTATIONS : classifie
+    STATUTS_PRESTATIONS ||..o{ PRESTATIONS : qualifie
+    AH ||--o| AH_STOCKAGE : stockage_facultatif
+    AH ||--o{ AH_OUVRAGE : ouvrages
+    AH ||--o{ AH_SECTIONS : sections_acceptees
+    COURS_EAU ||--o{ AH_SECTIONS : support
+    DIGUES ||--|| DIGUES_REPERES : contient
+    COURS_EAU ||--o{ DIGUES_REPERES : repere
+    COURS_EAU |o--o{ PRESTATIONS : "cours_eau_id"
+    DIGUES |o--o{ PRESTATIONS : "digue_id"
+    AH_STOCKAGE |o--o{ PRESTATIONS : "ah_stockage_id"
+    AH_OUVRAGE |o--o{ PRESTATIONS : "ah_ouvrage_id"
+    AH_SECTIONS |o--o{ PRESTATIONS : "ah_section_id"
+    SITES_TERRESTRES |o--o{ PRESTATIONS : "site_terrestre_id"
+    public__ouvrages_hydrauliques ||..o{ public__ouvrages_hydrauliques__desordres : "ouvrage_hydraulique_id"
+    public__desordres ||..o{ public__ouvrages_hydrauliques__desordres : "desordre_id"
+    public__ouvrages_hydrauliques ||..o{ public__ouvrages_hydrauliques__objets_lies : "ouvrage_hydraulique_id"
+    public__ouvrages_hydrauliques |o..o{ public__ouvrages_hydrauliques__objets_lies : "autre_ouvrage_hydraulique_id"
+    public__ouvrages_particuliers |o..o{ public__ouvrages_hydrauliques__objets_lies : "ouvrage_particulier_id"
+    public__equipements_mesure |o..o{ public__ouvrages_hydrauliques__objets_lies : "equipement_mesure_id"
+    referentiel__categories_desordre |o..o{ public__desordres : "categorie_desordre_id"
+    referentiel__cotes |o..o{ public__desordres : "cote_id"
+    public__desordres |o..o{ public__observations : "desordre_id"
+    public__desordres ||..o{ public__ouvrages_particuliers__desordres : "desordre_id"
+    DIGUES ||..o{ public__troncons : "digue_id"
+    public__equipements_mesure |o..o{ public__observations : "equipement_mesure_id"
+    public__observations ||..o{ public__photos : "observation_id"
+    public__ouvrages_hydrauliques |o..o{ public__observations : "ouvrage_hydraulique_id"
+    public__ouvrages_particuliers |o..o{ public__observations : "ouvrage_particulier_id"
+    public__ouvrages_particuliers ||..o{ public__ouvrages_particuliers__desordres : "ouvrage_particulier_id"
+    referentiel__positions |o..o{ public__desordres : "position_id"
+    referentiel__sources_information |o..o{ public__desordres : "source_id"
+    referentiel__suites_apporter |o..o{ public__observations : "suite_apporter_id"
+    public__troncons |o..o{ public__equipements_mesure : "troncon_id"
+    public__troncons |o..o{ public__observations : "troncon_id"
+    public__troncons |o..o{ public__ouvrages_hydrauliques : "troncon_id"
+    public__troncons |o..o{ public__ouvrages_particuliers : "troncon_id"
+    referentiel__types_equipement_mesure ||..o{ public__equipements_mesure : "type_id"
+    referentiel__types_ouvrage_hydraulique |o..o{ public__ouvrages_hydrauliques : "type_id"
+    referentiel__types_desordre |o..o{ public__desordres : "type_desordre_id"
+    referentiel__rives |o..o{ public__troncons : "type_rive_id"
+    referentiel__typologies_troncon |o..o{ public__troncons : "typologie_troncon_id"
+    referentiel__urgences |o..o{ public__observations : "urgence_id"
+    referentiel__categories_desordre |o..o{ referentiel__types_desordre : "categorie_id"
+    public__equipements_mesure ||..o{ public__equipements_mesure__desordres : "equipement_mesure_id"
+    public__desordres ||..o{ public__equipements_mesure__desordres : "desordre_id"
+    referentiel__types_ouvrage_particulier |o..o{ public__ouvrages_particuliers : "type_id"
+    referentiel__cotes |o..o{ public__equipements_mesure : "cote_id"
+    referentiel__positions |o..o{ public__equipements_mesure : "position_id"
+    referentiel__sources_information |o..o{ public__equipements_mesure : "source_id"
+    public__troncons |o..o{ public__ouvrages_hydrauliques__objets_lies : "berge_id, berge_id_type"
+    referentiel__types_troncon ||..o{ public__troncons : "type_troncon_id"
+    referentiel__sources_information |o..o{ public__troncons : "source_id"
+    referentiel__cotes |o..o{ public__troncons : "cote_id"
+    referentiel__positions |o..o{ public__troncons : "position_id"
+    referentiel__fonctions_structure |o..o{ public__troncons : "fonction_id"
+    referentiel__fonctions_structure |o..o{ public__troncons : "fonction_haut_id"
+    referentiel__fonctions_structure |o..o{ public__troncons : "fonction_bas_id"
+    referentiel__natures_structure |o..o{ public__troncons : "nature_id"
+    referentiel__natures_structure |o..o{ public__troncons : "nature_haut_id"
+    referentiel__natures_structure |o..o{ public__troncons : "nature_bas_id"
+    referentiel__materiaux_structure |o..o{ public__troncons : "materiau_id"
+    referentiel__materiaux_structure |o..o{ public__troncons : "materiau_haut_id"
+    referentiel__materiaux_structure |o..o{ public__troncons : "materiau_bas_id"
+    public__troncons |o..o{ PRESTATIONS : "troncon_id"
+    public__troncons |o..o{ public__desordres : "troncon_id"
+    DIGUES |o..o{ public__desordres : "digue_id"
+    AH_OUVRAGE |o..o{ public__desordres : "ah_ouvrage_id"
+    AH_SECTIONS |o..o{ public__desordres : "ah_section_id"
+    AH_STOCKAGE |o..o{ public__desordres : "ah_stockage_id"
+    SITES_TERRESTRES |o..o{ public__desordres : "site_terrestre_id"
+    public__cheminements |o..o{ public__ouvrages_hydrauliques__objets_lies : "cheminement_id"
+    public__cheminements |o..o{ public__observations : "cheminement_id"
+    public__mobilier |o..o{ public__observations : "mobilier_id"
+    public__vegetation |o..o{ public__observations : "vegetation_id"
+    AH_OUVRAGE |o..o{ public__ouvrages_hydrauliques : "ah_ouvrage_id"
+    AH_STOCKAGE |o..o{ public__ouvrages_hydrauliques : "ah_stockage_id"
+    public__troncons |o..o{ public__mobilier : "troncon_id"
+    AH_OUVRAGE |o..o{ public__mobilier : "ah_ouvrage_id"
+    AH_STOCKAGE |o..o{ public__mobilier : "ah_stockage_id"
+    AH_SECTIONS |o..o{ public__mobilier : "ah_section_id"
+    SITES_TERRESTRES |o..o{ public__mobilier : "site_terrestre_id"
+    referentiel__types_mobilier ||..o{ public__mobilier : "type_id"
+    public__mobilier |o..o{ PRESTATIONS : "mobilier_id"
+    public__mobilier |o..o{ public__desordres : "mobilier_id"
+    public__troncons |o..o{ public__cheminements : "troncon_id"
+    AH_OUVRAGE |o..o{ public__cheminements : "ah_ouvrage_id"
+    AH_STOCKAGE |o..o{ public__cheminements : "ah_stockage_id"
+    AH_SECTIONS |o..o{ public__cheminements : "ah_section_id"
+    SITES_TERRESTRES |o..o{ public__cheminements : "site_terrestre_id"
+    referentiel__types_cheminement ||..o{ public__cheminements : "type_cheminement_id"
+    public__cheminements |o..o{ PRESTATIONS : "cheminement_id"
+    public__cheminements |o..o{ public__desordres : "cheminement_id"
+    public__troncons |o..o{ public__vegetation : "troncon_id"
+    AH_OUVRAGE |o..o{ public__vegetation : "ah_ouvrage_id"
+    AH_STOCKAGE |o..o{ public__vegetation : "ah_stockage_id"
+    AH_SECTIONS |o..o{ public__vegetation : "ah_section_id"
+    SITES_TERRESTRES |o..o{ public__vegetation : "site_terrestre_id"
+    referentiel__familles_vegetation ||..o{ public__vegetation : "famille_vegetation"
+    public__vegetation |o..o{ PRESTATIONS : "vegetation_id"
+    public__vegetation |o..o{ public__desordres : "vegetation_id"
+    AH_OUVRAGE |o..o{ public__observations : "ah_ouvrage_id"
+    AH_STOCKAGE |o..o{ public__observations : "ah_stockage_id"
+    AH_SECTIONS |o..o{ public__observations : "ah_section_id"
+    SITES_TERRESTRES |o..o{ public__observations : "site_terrestre_id"
+    DIGUES |o..o{ public__ouvrages_hydrauliques__objets_lies : "digue_id"
+    %% RULE {"title": "Périmètre", "body": "Les 48 tables forment une projection structurellement autonome. Le schéma SQL installe ces 48 tables dans une base neuve PostgreSQL/PostGIS. Le présent contrat couvre les données et les règles de la base."}
+    %% RULE {"title": "Traçabilité commune", "body": "Toutes les tables métier : cree_le TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(), immuable après insertion ; modifie_par TEXT et date_modification TIMESTAMPTZ. Référence : gemapi.stamp_modification(), session_user et clock_timestamp(). Fournir la création côté serveur, refuser en BEFORE UPDATE toute différence de cree_le, pas de réécriture silencieuse. Ne pas modifier les dates métier. Attribution historique informatique non reprise comme auteur courant ; auteur d’import réel seulement. Les associations et référentiels gardent leurs colonnes techniques existantes."}
+    %% RULE {"title": "Observation datée et cible unique", "body": "date_observation NOT NULL. ck_cible_unique CHECK(num_nonnulls(desordre_id,troncon_id,ah_ouvrage_id,ah_stockage_id,ah_section_id,site_terrestre_id,mobilier_id,cheminement_id,vegetation_id,ouvrage_hydraulique_id,ouvrage_particulier_id,equipement_mesure_id)=1). Chaque FK reste individuellement facultative, chaque cible reçoit 0..N constats. Aucun parent digue, système ou AH global. Un site avec ou sans enfants est admissible. Un constat ordinaire ne crée pas de désordre. Conserver urgence, evolution, suite, suite_apporter_id et nombre_desordres ; aucune nouvelle restriction de ces champs aux seuls désordres."}
+    %% RULE {"title": "Convergence des cibles tronçons", "body": "Une seule FK simple vers gemapi.troncons(id), tous types physiques admis. La reprise des trois anciens pointeurs collecte leurs UUID distincts après résolution explicite des identités : un seul UUID permet la conversion ; plusieurs UUID distincts bloquent la conversion. Aucun objet tronçon fusionné."}
+    %% RULE {"title": "Parent obligatoire des ouvrages hydrauliques", "body": "CONSTRAINT ck_ouvrage_parent_unique CHECK (num_nonnulls(troncon_id, ah_ouvrage_id, ah_stockage_id) = 1). Les trois FK visent respectivement gemapi.troncons(id), gemapi.ah_ouvrage(id) et gemapi.ah_stockage(id), chacune avec ON DELETE RESTRICT. Chaque parent peut recevoir 0..N ouvrages. Réaffecter explicitement tout ouvrage avant suppression de son parent. À la reprise, absence de parent identifiable et conflit de plusieurs candidats sont deux motifs distincts de blocage."}
+    %% RULE {"title": "Désordre persistant", "body": "Identité UUID conservée. date_fin IS NULL : actif ; date_fin IS NOT NULL : archivé. Aucun statut supplémentaire. Archivage sans suppression des observations ou photographies ; urgence qualifie le constat, pas le cycle du désordre. Au plus une cible directe parmi troncon_id,digue_id,ah_ouvrage_id,ah_section_id,ah_stockage_id,site_terrestre_id,mobilier_id,cheminement_id,vegetation_id. Les associations techniques conservées restent distinctes de la cible directe."}
+    %% RULE {"title": "Photos documentaires", "body": "Une photo a une observation obligatoire, qui est datée, et aucune géométrie ni localisation propre. La localisation suit la cible de l’observation ; si cette cible est un désordre sans géométrie, indiquer localisation indisponible, sans inventer de point. Conserver date_photo, designation, commentaire, storage_key (unique si renseignée), valid et version. photographe et observateur sont des mentions textuelles métier facultatives obtenues seulement d’une attribution source explicite ; pas de FK contacts ni de technicien imposé. Les photos de prestations restent photo_1/photo_2 et leurs commentaires, sans observation intermédiaire."}
+    %% RULE {"title": "Prestations : dix cibles", "body": "CHECK immédiat num_nonnulls(cours_eau_id,digue_id,troncon_id,ah_stockage_id,ah_ouvrage_id,ah_section_id,site_terrestre_id,mobilier_id,cheminement_id,vegetation_id)<=1 ; contrôle différé =1. assert_prestation_relations contrôle la complétude en fin de transaction via prestation_relations_parent. Les cinq cibles suivantes exigent une géométrie propre : cours d’eau, digue, tronçon, section AH et site ; Multi* pour le site. Pour les trois familles nouvelles, géométrie propre prioritaire, sinon celle de l’enfant, sans remonter au parent. Mesures stockées et non recalculées dans les vues ; origine Prestation ou Patrimoine de rattachement. Les quantités déclarées restent indépendantes. Position/rive inchangées ; pas de N:N supplémentaire."}
+    %% RULE {"title": "Repérage par géométrie", "body": "geometry décrit l’objet ; geometry_reperage est un axe LineString facultatif, non copie automatique de la forme métier. Son orientation doit être connue ; une fraction f dans [0,1] donne ST_LineInterpolatePoint(axe,f), une abscisse métrique d donne f=d/ST_Length(axe). ST_LineLocatePoint calcule la fraction d’un XY validé ; contrôler écart à l’axe et tolérance métier avant projection. Pas de borne intermédiaire ni table SIRS de repérage importée. Une position relative seule sans axe, origine, sens et unité fiables reste non convertible ; diagnostic et aucune géométrie fabriquée. Conserver digues_reperes et les références hydrographiques des sections AH."}
+    %% RULE {"title": "Identité des tronçons", "body": "Chaque tronçon garde son UUID, son type physique et ses géométries. Aucun lien de support ni hiérarchie de substitution. Les sept types sont admissibles pour chaque rattachement générique à un tronçon. Les identités et références de support historiques sont inventoriées à la reprise."}
+    %% RULE {"title": "Géométrie et contraintes de tronçons", "body": "digue_id NOT NULL vers gemapi.digues(id). ck_troncons_type conserve les sept codes de gemapi.types_troncon. ck_troncons_geometry_b4 impose une geometry LINESTRING ou POLYGON valide et non vide pour RISBERME et FRANC_BORD quand valid est vrai. ck_troncons_axe_reperage accepte un axe NULL ou valide, non vide, de longueur positive. ck_troncons_crete_fields CHECK (type_troncon_id <> 'CRETE' OR num_nonnulls(cote_id, position_id, fonction_haut_id, fonction_bas_id, nature_haut_id, nature_bas_id, materiau_haut_id, materiau_bas_id) = 0). Contrôler le SRID source avant transformation. Le tracé est propre au tronçon."}
+    %% RULE {"title": "Classe historique hors projection", "body": "StructureAmenagementHydraulique est une classe source non projetée. Inventorier documents, références, observations et fichiers photo. Un constat dont cette structure était la seule cible reste non convertible jusqu’à une décision explicite. Conserver les sources intactes."}
+    %% RULE {"title": "Objets liés : périmètre interne", "body": "Retirer les liens vers voirie, réseaux hydrauliques, télécom-énergie et réseaux techniques, familles non projetées. Le lien digue_id vise désormais gemapi.digues, avec correspondance d’UUID explicite à l’import. ck_cible_ouvrage_hydraulique_liee : num_nonnulls(cheminement_id,autre_ouvrage_hydraulique_id,ouvrage_particulier_id,equipement_mesure_id,berge_id,digue_id)=1. Ne pas garder de ligne associative vide après suppression d’une cible. fk_ouvrage_lie_berge (berge_id, berge_id_type) référence gemapi.troncons(id, type_troncon_id), DEFERRABLE INITIALLY DEFERRED. berge_id_type est généré avec la constante BERGE. uq_troncons_type UNIQUE (id, type_troncon_id) garantit la clé référencée."}
+    %% RULE {"title": "Validité et version", "body": "valid et version restent partout où v0.4 les porte. version commence à 1 par défaut et avance à chaque UPDATE, dans la borne 1..9007199254740991. Une écriture sur une des trois associations techniques de désordre avance aussi la version des désordres concernés. Les colonnes valid obligatoires ont false pour défaut. Les autres restent nullables, sans valeur par défaut. valid conditionne notamment ck_troncons_geometry_b4 et les états éditables source. Il ne signifie pas archivé. Ne pas importer de journal ou authentification ni reprendre les triggers d’attribution contacts ; le stamp commun les remplace pour les écritures informatiques."}
+    %% RULE {"title": "Nouvelles familles conservées", "body": "Mobilier, cheminements et végétation gardent exactement un parent parmi site terrestre, tronçon, ouvrage AH, stockage AH et section AH. CHECK (num_nonnulls(site_terrestre_id, troncon_id, ah_ouvrage_id, ah_stockage_id, ah_section_id) = 1). Les cinq FK sont facultatives individuellement et portent ON DELETE RESTRICT. Géométries propres obligatoires 3950 2D valides non vides, Point/LineString/Polygon et Multi*. Désignation et type obligatoires, dates facultatives cohérentes. Les valeurs de référentiels v0.4 sont préservées ; pas de nouvelles spécialisations SIRS ni de nouveaux types voirie. Libelle métier redondant reste supprimé ; nom et intitule historiques conservés."}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "MRE", "code": "mobilier_recreatif", "abrege": "MRE", "libelle": "Mobilier récréatif"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "PAN", "code": "panneau", "abrege": "PAN", "libelle": "Panneau"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "CLO", "code": "cloture", "abrege": "CLO", "libelle": "Clôture"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "MOU", "code": "monument", "abrege": "MOU", "libelle": "Monument"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "SOB", "code": "socle", "abrege": "SOB", "libelle": "Socle"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "PON", "code": "ponton", "abrege": "PON", "libelle": "Ponton"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "AUT", "code": "autre", "abrege": "AUT", "libelle": "Autre mobilier"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "IND", "code": "indefini", "abrege": "IND", "libelle": "Mobilier indéfini"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "BAR", "code": "barriere_chaine", "abrege": "BAR", "libelle": "Barrière / chaîne"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "POR", "code": "portail", "abrege": "POR", "libelle": "Portail"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "BOR", "code": "borne_voirie", "abrege": "BOR", "libelle": "Borne de voirie"}
+    %% VALUE {"table": "referentiel__types_mobilier", "id": "OBS", "code": "obstruction_passage", "abrege": "OBS", "libelle": "Ouvrage d’obstruction du passage"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "PNT", "code": "pont", "abrege": "PNT", "libelle": "Pont"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "RAM", "code": "rampe", "abrege": "RAM", "libelle": "Rampe"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "TUN", "code": "tunnel", "abrege": "TUN", "libelle": "Tunnel"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "PAS", "code": "passage_gue", "abrege": "PAS", "libelle": "Passage à gué"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "ESC", "code": "escalier_acces", "abrege": "ESC", "libelle": "Escalier d'accès"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "CAL", "code": "cale", "abrege": "CAL", "libelle": "Cale"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "VAC", "code": "voie_acces", "abrege": "VAC", "libelle": "Voie d'accès"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "CAC", "code": "chemin_acces_technique", "abrege": "CAC", "libelle": "Chemin d'accès technique"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "CHE", "code": "voie_sur_digue", "abrege": "CHE", "libelle": "Voie sur digue"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "AUT", "code": "autre", "abrege": "AUT", "libelle": "Autre cheminement"}
+    %% VALUE {"table": "referentiel__types_cheminement", "id": "IND", "code": "indefini", "abrege": "IND", "libelle": "Cheminement indéfini"}
+    %% VALUE {"table": "referentiel__familles_vegetation", "id": "HERBACEES", "code": "HERBACEES", "libelle": "Herbacées", "designation": null}
+    %% VALUE {"table": "referentiel__familles_vegetation", "id": "BUISSONS_ARBUSTES", "code": "BUISSONS_ARBUSTES", "libelle": "Buissons et arbustes", "designation": null}
+    %% VALUE {"table": "referentiel__familles_vegetation", "id": "ARBRES", "code": "ARBRES", "libelle": "Arbres", "designation": null}
+    %% VALUE {"table": "PRESTATIONS_CATEGORIE", "id": "4946680e-3547-5f25-8508-2929a7f7a79e", "libelle": "Entretien manuel", "ordre": 2}
+    %% VALUE {"table": "PRESTATIONS_CATEGORIE", "id": "60410105-fbdd-5890-9d20-a331b4e61e88", "libelle": "Génie écologique", "ordre": 3}
+    %% VALUE {"table": "PRESTATIONS_CATEGORIE", "id": "ae1b972a-e127-5216-9660-7c66583eb893", "libelle": "Plantations", "ordre": 4}
+    %% VALUE {"table": "PRESTATIONS_CATEGORIE", "id": "cf2572fb-9365-5ac5-bdf4-0d66581d9aaa", "libelle": "Entretien mécanique", "ordre": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "cf2572fb-9365-5ac5-bdf4-0d66581d9aaa", "id": "272003ca-7006-5f4b-b5ac-f6d84281a3e2", "code": "CURAGE", "libelle": "Curage", "actif": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "4946680e-3547-5f25-8508-2929a7f7a79e", "id": "6d6fa494-e36e-5ba5-bc50-dbf256d4fc7d", "code": "ELAGAGE", "libelle": "Élagage", "actif": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "60410105-fbdd-5890-9d20-a331b4e61e88", "id": "aae7d72e-377e-5cd8-a0fb-326d7bd03c5a", "code": "SUIVI", "libelle": "Suivi de milieu", "actif": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "cf2572fb-9365-5ac5-bdf4-0d66581d9aaa", "id": "b6ea0cbd-54ef-5bb8-9cc4-42af05fe876e", "code": "FAUCHE", "libelle": "Fauche", "actif": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "4946680e-3547-5f25-8508-2929a7f7a79e", "id": "cf98e704-4949-54b9-aa02-b65b55e8b83d", "code": "EMBACLES", "libelle": "Retrait d’embâcles", "actif": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "60410105-fbdd-5890-9d20-a331b4e61e88", "id": "d2fa2842-9125-5f4a-ad3f-0adffead207c", "code": "ETUDE", "libelle": "Étude", "actif": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "cf2572fb-9365-5ac5-bdf4-0d66581d9aaa", "id": "d8737de6-7a5e-5892-afc4-b51f5e882e26", "code": "DEBROUSSAILLAGE", "libelle": "Débroussaillage", "actif": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "60410105-fbdd-5890-9d20-a331b4e61e88", "id": "da65d85b-ecf1-5481-bd2a-a47cf9b14544", "code": "RESTAURATION", "libelle": "Restauration écologique", "actif": 1}
+    %% VALUE {"table": "TYPES_PRESTATIONS", "categorie_id": "ae1b972a-e127-5216-9660-7c66583eb893", "id": "e2659d31-52c3-5f87-884e-56eedd7e1ee9", "code": "PLANTATION", "libelle": "Plantation", "actif": 1}
+    %% VALUE {"table": "STATUTS_PRESTATIONS", "id": "58554fd0-fcc2-45b6-aa19-cc4a897af3fb", "code": "PLANIFIE", "libelle": "Planifié"}
+    %% VALUE {"table": "STATUTS_PRESTATIONS", "id": "9ee713ca-13a1-4358-b5d8-fa79627fc256", "code": "EN_COURS", "libelle": "En cours"}
+    %% VALUE {"table": "STATUTS_PRESTATIONS", "id": "421801d8-30be-4a5a-8e18-cb2b9ac0ea37", "code": "TERMINE", "libelle": "Terminé"}
+    %% VALUE {"table": "STATUTS_PRESTATIONS", "id": "fdd48590-aace-4693-946e-80c1f4d8693f", "code": "ANNULE", "libelle": "Annulé"}
+    %% VALUE {"table": "referentiel__categories_desordre", "id": "RefCategorieDesordre:1", "libelle": "Érosion externe", "abrege": "ERX", "designation": "1"}
+    %% VALUE {"table": "referentiel__categories_desordre", "id": "RefCategorieDesordre:2", "libelle": "Érosion interne", "abrege": "ERI", "designation": "2"}
+    %% VALUE {"table": "referentiel__categories_desordre", "id": "RefCategorieDesordre:3", "libelle": "Désordre affectant la structure", "abrege": "DAF", "designation": "3"}
+    %% VALUE {"table": "referentiel__categories_desordre", "id": "RefCategorieDesordre:4", "libelle": "Brèche", "abrege": "BRE", "designation": "4"}
+    %% VALUE {"table": "referentiel__categories_desordre", "id": "RefCategorieDesordre:5", "libelle": "Conditions d'entretien de la digue, détérioration des équipements, activités illégales, gêne à la gestion", "abrege": "ENT", "designation": "5"}
+    %% VALUE {"table": "referentiel__categories_desordre", "id": "RefCategorieDesordre:6", "libelle": "Autre", "abrege": "AUT", "designation": "6"}
+    %% VALUE {"table": "referentiel__categories_desordre", "id": "RefCategorieDesordre:7", "libelle": "Défaut sur dispositif de protection", "abrege": "DDP", "designation": "7"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:1", "designation": "1", "abrege": "RIV", "libelle": "Rivière"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:2", "designation": "2", "abrege": "TER", "libelle": "Terre"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:3", "designation": "3", "abrege": "E/C", "libelle": "Etang/Canal"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:4", "designation": "4", "abrege": "MER", "libelle": "Mer"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:5", "designation": "5", "abrege": "DEU", "libelle": "Deux côtés de la digue"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:6", "designation": "6", "abrege": "CRE", "libelle": "Crête"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:7", "designation": "7", "abrege": "AMT", "libelle": "Amont"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:8", "designation": "8", "abrege": "AVL", "libelle": "Aval"}
+    %% VALUE {"table": "referentiel__cotes", "id": "RefCote:99", "designation": "99", "abrege": "IND", "libelle": "Indéfini"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:1", "code": null, "libelle": "Drainage", "designation": "1"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:2", "code": null, "libelle": "Protection", "designation": "2"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:3", "code": null, "libelle": "Etanchéité", "designation": "3"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:4", "code": null, "libelle": "Protection contre l'érosion interne", "designation": "4"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:5", "code": null, "libelle": "Anti-fouisseur", "designation": "5"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:6", "code": null, "libelle": "Stabilité d'ensemble", "designation": "6"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:7", "code": null, "libelle": "Dispositif de revanche", "designation": "7"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:8", "code": null, "libelle": "Fondation", "designation": "8"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:9", "code": null, "libelle": "Parafouille", "designation": "9"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:10", "code": null, "libelle": "Filtration", "designation": "10"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:11", "code": null, "libelle": "Accès/gestion", "designation": "11"}
+    %% VALUE {"table": "referentiel__fonctions_structure", "id": "RefFonction:99", "code": null, "libelle": "Indéfini", "designation": "99"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:1", "code": "TEV", "libelle": "Terre végétale", "designation": "1"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:2", "code": "GRA", "libelle": "Graviers (concassé 0.33 mm)", "designation": "2"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:3", "code": "PMA", "libelle": "Pierres Maçonnées", "designation": "3"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:4", "code": "PSE", "libelle": "Pierres Sèches", "designation": "4"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:5", "code": "BET", "libelle": "Béton", "designation": "5"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:6", "code": "BOI", "libelle": "Bois", "designation": "6"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:7", "code": "VET", "libelle": "Revêtement végétalisé", "designation": "7"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:8", "code": "ACI", "libelle": "Acier", "designation": "8"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:9", "code": "ENB", "libelle": "Enrobé", "designation": "9"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:10", "code": "REM", "libelle": "Remblais", "designation": "10"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:11", "code": "ROD", "libelle": "Roche déversée", "designation": "11"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:12", "code": "ROA", "libelle": "Roche appareillée", "designation": "12"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:13", "code": "ROB", "libelle": "Roche bétonnée", "designation": "13"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:14", "code": "NAT", "libelle": "Lit naturel du fossé", "designation": "14"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:15", "code": "TVB", "libelle": "Tout Venant Brut", "designation": "15"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:16", "code": "CON", "libelle": "Concassé 0.80 mm", "designation": "16"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:17", "code": "DEC", "libelle": "Déchets de carrière en 0/400mm", "designation": "17"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:18", "code": "MOE", "libelle": "Moellons", "designation": "18"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:19", "code": "PBJ", "libelle": "Plaques de béton jointives", "designation": "19"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:21", "code": "PAV", "libelle": "Pavés", "designation": "21"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:22", "code": "SAB", "libelle": "Sables", "designation": "22"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:23", "code": "LIM", "libelle": "Limons", "designation": "23"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:24", "code": "LSB", "libelle": "Limons et sables", "designation": "24"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:25", "code": "SIL", "libelle": "Silts", "designation": "25"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:26", "code": "GOM", "libelle": "Géomembrane", "designation": "26"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:27", "code": "GEO", "libelle": "Géotextile", "designation": "27"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:28", "code": "DEB", "libelle": "Dé bétonné", "designation": "28"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:29", "code": "GAL", "libelle": "Galets 0/100 mm", "designation": "29"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:30", "code": "PJK", "libelle": "Panneaux JK", "designation": "30"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:31", "code": "FRA", "libelle": "Fraisat recyclé", "designation": "31"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:32", "code": "GRI", "libelle": "Grillage", "designation": "32"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:33", "code": "TUY", "libelle": "Tuyau drain", "designation": "33"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:34", "code": "SCH", "libelle": "Schiste 0/100 mm", "designation": "34"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:35", "code": "BEC", "libelle": "Bentonite-ciment", "designation": "35"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:36", "code": "VGE", "libelle": "Végétalisé, enherbé", "designation": "36"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:37", "code": "VGA", "libelle": "Végétalisé, arbustif", "designation": "37"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:38", "code": "VGB", "libelle": "Végétalisé, boisé", "designation": "38"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:39", "code": "ARG", "libelle": "Argile", "designation": "39"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:40", "code": "MAD", "libelle": "Matériau drainant", "designation": "40"}
+    %% VALUE {"table": "referentiel__materiaux_structure", "id": "RefMateriau:99", "code": "IND", "libelle": "Indéfini", "designation": "99"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:1", "code": "ABR", "libelle": "Absence de revêtement", "designation": "1"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:2", "code": "RVT", "libelle": "Revêtement", "designation": "2"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:3", "code": "PAL", "libelle": "Palplanche", "designation": "3"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:4", "code": "PIX", "libelle": "Pieux", "designation": "4"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:5", "code": "RVH", "libelle": "Ouvrage de revanche", "designation": "5"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:6", "code": "MUR", "libelle": "Mur de soutènement", "designation": "6"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:7", "code": "DEV", "libelle": "Déversoir", "designation": "7"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:8", "code": "GAB", "libelle": "Gabion", "designation": "8"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:9", "code": "ENR", "libelle": "Enrochement", "designation": "9"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:10", "code": "OUP", "libelle": "Ouvrage parafouille", "designation": "10"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:11", "code": "FOS", "libelle": "Fossé (ou contre-fossé) côté terre en pied de digue", "designation": "11"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:12", "code": "FOM", "libelle": "Fondation meuble", "designation": "12"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:13", "code": "FOR", "libelle": "Fondation rocheuse", "designation": "13"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:14", "code": "ZUR", "libelle": "Zone urbanisée", "designation": "14"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:15", "code": "CDD", "libelle": "Corps de digue", "designation": "15"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:16", "code": "PER", "libelle": "Perré", "designation": "16"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:17", "code": "REM", "libelle": "Remblai", "designation": "17"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:18", "code": "PAR", "libelle": "Paroi étanche", "designation": "18"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:19", "code": "ZDP", "libelle": "Zone de dissipation (déversoir)", "designation": "19"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:20", "code": "SEU", "libelle": "Seuil (déversoir)", "designation": "20"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:21", "code": "DIF", "libelle": "Dispositif fusible (déversoir)", "designation": "21"}
+    %% VALUE {"table": "referentiel__natures_structure", "id": "RefNature:99", "code": "IND", "libelle": "Indéfini", "designation": "99"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:3", "designation": "3", "abrege": "PDI", "libelle": "Pied de digue"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:4", "designation": "4", "abrege": "TAR", "libelle": "Talus risberme"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:5", "designation": "5", "abrege": "SOR", "libelle": "Sommet risberme"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:6", "designation": "6", "abrege": "TAD", "libelle": "Talus digue"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:7", "designation": "7", "abrege": "PLU", "libelle": "Plusieurs parties de la digue"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:8", "designation": "8", "abrege": "CRE", "libelle": "Crête"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:9", "designation": "9", "abrege": "HOR", "libelle": "Hors de la digue"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:10", "designation": "10", "abrege": "FRB", "libelle": "Franc-bord"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:11", "designation": "11", "abrege": "BER", "libelle": "Berge"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:12", "designation": "12", "abrege": "TRP", "libelle": "Talus/Risberme/Pied de digue"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:13", "designation": "13", "abrege": "COR", "libelle": "Coursier"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:14", "designation": "14", "abrege": "PCO", "libelle": "Pied de Coursier"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:15", "designation": "15", "abrege": "FOS", "libelle": "Fossé"}
+    %% VALUE {"table": "referentiel__positions", "id": "RefPosition:99", "designation": "99", "abrege": "IND", "libelle": "Indéfini"}
+    %% VALUE {"table": "referentiel__rives", "id": "RefRive:1", "designation": "1", "abrege": null, "libelle": "Gauche"}
+    %% VALUE {"table": "referentiel__rives", "id": "RefRive:2", "designation": "2", "abrege": null, "libelle": "Droite"}
+    %% VALUE {"table": "referentiel__rives", "id": "RefRive:3", "designation": "3", "abrege": null, "libelle": "Les deux"}
+    %% VALUE {"table": "referentiel__rives", "id": "RefRive:99", "designation": "99", "abrege": null, "libelle": "Indéfini"}
+    %% VALUE {"table": "referentiel__sources_information", "id": "RefSource:0", "designation": "0", "abrege": "NOB", "libelle": "Non observable"}
+    %% VALUE {"table": "referentiel__sources_information", "id": "RefSource:1", "designation": "1", "abrege": "DED", "libelle": "Déduction de l'observateur sur le terrain"}
+    %% VALUE {"table": "referentiel__sources_information", "id": "RefSource:2", "designation": "2", "abrege": "DOC", "libelle": "Document externe - archives"}
+    %% VALUE {"table": "referentiel__sources_information", "id": "RefSource:3", "designation": "3", "abrege": "TEM", "libelle": "Témoignage externe"}
+    %% VALUE {"table": "referentiel__sources_information", "id": "RefSource:4", "designation": "4", "abrege": "VUO", "libelle": "Vu sur le terrain par l'observateur"}
+    %% VALUE {"table": "referentiel__sources_information", "id": "RefSource:99", "designation": "99", "abrege": "IND", "libelle": "Indéfini"}
+    %% VALUE {"table": "referentiel__suites_apporter", "id": "RefSuiteApporter:1", "designation": "1", "abrege": "AUC", "libelle": "Aucune"}
+    %% VALUE {"table": "referentiel__suites_apporter", "id": "RefSuiteApporter:2", "designation": "2", "abrege": "SUR", "libelle": "Surveillance"}
+    %% VALUE {"table": "referentiel__suites_apporter", "id": "RefSuiteApporter:3", "designation": "3", "abrege": "ENT", "libelle": "Entretien"}
+    %% VALUE {"table": "referentiel__suites_apporter", "id": "RefSuiteApporter:4", "designation": "4", "abrege": "ETU", "libelle": "Etudes"}
+    %% VALUE {"table": "referentiel__suites_apporter", "id": "RefSuiteApporter:5", "designation": "5", "abrege": "TRA", "libelle": "Travaux"}
+    %% VALUE {"table": "referentiel__suites_apporter", "id": "RefSuiteApporter:6", "designation": "6", "abrege": "ARH", "libelle": "Archivé"}
+    %% VALUE {"table": "referentiel__suites_apporter", "id": "RefSuiteApporter:7", "designation": "7", "abrege": "PRI", "libelle": "Prioritaire"}
+    %% VALUE {"table": "referentiel__suites_apporter", "id": "RefSuiteApporter:8", "designation": "8", "abrege": "CST", "libelle": "Constat"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:1", "categorie_id": "RefCategorieDesordre:1", "libelle": "Erosion longitudinale diverse, autre que celle due au cours d'eau", "abrege": "ERD", "designation": "1"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:2", "categorie_id": "RefCategorieDesordre:3", "libelle": "Fissure dans le terrain ou sur une structure rigide", "abrege": "FIS", "designation": "2"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:3", "categorie_id": "RefCategorieDesordre:2", "libelle": "Fontis, indice d'activité karstique (infiltration)", "abrege": "FON", "designation": "3"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:4", "categorie_id": "RefCategorieDesordre:3", "libelle": "Affaissement, glissement, tassement, tout indice de mouvement du terrain ou d'une structure rigide", "abrege": "MVT", "designation": "4"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:5", "categorie_id": "RefCategorieDesordre:1", "libelle": "Piétinements d'animaux sur la digue", "abrege": "PIE", "designation": "5"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:6", "categorie_id": "RefCategorieDesordre:1", "libelle": "Indice de ravinement sur talus ou plateforme (a priori dans le sens transversal)", "abrege": "RAV", "designation": "6"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:7", "categorie_id": "RefCategorieDesordre:3", "libelle": "Débouché de TERrier ou galerie d'animaux fouisseurs", "abrege": "TRR", "designation": "7"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:8", "categorie_id": "RefCategorieDesordre:3", "libelle": "Présence de Végétation dangereuse (arbustive et/ou arborescente, ou de souches) ", "abrege": "VED", "designation": "8"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:9", "categorie_id": "RefCategorieDesordre:6", "libelle": "Dépression, étang, zone d'emprunt (au delà du pied de digue)", "abrege": "DEP", "designation": "9"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:10", "categorie_id": "RefCategorieDesordre:2", "libelle": "Indice de fuite (ex: zone humide, laisse de fuite)", "abrege": "IFU", "designation": "10"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:11", "categorie_id": "RefCategorieDesordre:1", "libelle": "Erosion (longitudinale) due au fleuve", "abrege": "ERF", "designation": "11"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:12", "categorie_id": "RefCategorieDesordre:3", "libelle": "Rupture de réseaux", "abrege": "RUP", "designation": "12"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:13", "categorie_id": "RefCategorieDesordre:3", "libelle": "Crête bombée (redant)", "abrege": "CEB", "designation": "13"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:14", "categorie_id": "RefCategorieDesordre:3", "libelle": "Point bas", "abrege": "PTB", "designation": "14"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:15", "categorie_id": "RefCategorieDesordre:7", "libelle": "Altération des pierres ou du béton d'un ouvrage de maçonnerie, corrosion d'un ouvrage métallique", "abrege": "ALT", "designation": "15"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:16", "categorie_id": "RefCategorieDesordre:7", "libelle": "Décollement, dissociation, mauvais contact entre deux éléments d'ouvrage de nature différente", "abrege": "DEC", "designation": "16"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:17", "categorie_id": "RefCategorieDesordre:7", "libelle": "Déjointement, pierres enlevées sur maçonnerie", "abrege": "DEJ", "designation": "17"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:18", "categorie_id": "RefCategorieDesordre:3", "libelle": "Déstructuration d'un ouvrage (effondrement, démantèlement...)", "abrege": "DES", "designation": "18"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:19", "categorie_id": "RefCategorieDesordre:5", "libelle": "Prélèvement de matériau de la digue", "abrege": "PRV", "designation": "19"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:20", "categorie_id": "RefCategorieDesordre:5", "libelle": "Tête de piézomètre découverte ou observée lors de la visite", "abrege": "PZO", "designation": "20"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:21", "categorie_id": "RefCategorieDesordre:6", "libelle": "Sondage (en principe à la tarière manuelle) effectué dans la digue au cours de la visite", "abrege": "SDG", "designation": "21"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:22", "categorie_id": "RefCategorieDesordre:1", "libelle": "Surverse directe", "abrege": "SUD", "designation": "22"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:23", "categorie_id": "RefCategorieDesordre:1", "libelle": "Surverse par retour", "abrege": "SUR", "designation": "23"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:24", "categorie_id": "RefCategorieDesordre:4", "libelle": "Brèche par renard direct", "abrege": "BRD", "designation": "24"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:25", "categorie_id": "RefCategorieDesordre:4", "libelle": "Brèche par renard en retour", "abrege": "BRR", "designation": "25"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:26", "categorie_id": "RefCategorieDesordre:4", "libelle": "Brèche par surverse directe", "abrege": "BSD", "designation": "26"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:27", "categorie_id": "RefCategorieDesordre:4", "libelle": "Brèche par surverse en retour", "abrege": "BSR", "designation": "27"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:28", "categorie_id": "RefCategorieDesordre:5", "libelle": "Dépôt sauvage", "abrege": "DSA", "designation": "28"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:29", "categorie_id": "RefCategorieDesordre:3", "libelle": "Renard Hydraulique", "abrege": "RDH", "designation": "29"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:30", "categorie_id": "RefCategorieDesordre:3", "libelle": "Canalisation hors service", "abrege": "CHS", "designation": "30"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:31", "categorie_id": "RefCategorieDesordre:4", "libelle": "Brèche par cause indéterminée", "abrege": "BRE", "designation": "31"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:32", "categorie_id": "RefCategorieDesordre:3", "libelle": "Corps étranger affectant l'intégrité de la structure", "abrege": "COR", "designation": "32"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:33", "categorie_id": "RefCategorieDesordre:4", "libelle": "Brèche provoquée", "abrege": "BPR", "designation": "33"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:34", "categorie_id": "RefCategorieDesordre:4", "libelle": "Brèche par affouillement", "abrege": "BAF", "designation": "34"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:35", "categorie_id": "RefCategorieDesordre:3", "libelle": "Arrachement d'une partie de la digue lié à une chute d'arbre", "abrege": "ARR", "designation": "35"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:36", "categorie_id": "RefCategorieDesordre:5", "libelle": "Passage sauvage d'engins motorisés", "abrege": "PAS", "designation": "36"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:37", "categorie_id": "RefCategorieDesordre:2", "libelle": "Fossé en pied de digue", "abrege": "FOS", "designation": "37"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:38", "categorie_id": "RefCategorieDesordre:5", "libelle": "Vandalisme sur ouvrage de voirie", "abrege": "VAN", "designation": "38"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:39", "categorie_id": "RefCategorieDesordre:5", "libelle": "Borne manquante", "abrege": "BMQ", "designation": "39"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:40", "categorie_id": "RefCategorieDesordre:5", "libelle": "Borne détériorée", "abrege": "BDT", "designation": "40"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:41", "categorie_id": "RefCategorieDesordre:6", "libelle": "Inondation par refoulement", "abrege": "INR", "designation": "41"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:42", "categorie_id": "RefCategorieDesordre:5", "libelle": "Clôture \"sauvage\"sur la digue", "abrege": "CLO", "designation": "42"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:43", "categorie_id": "RefCategorieDesordre:5", "libelle": "Bâtiment encastré dans la digue", "abrege": "BAT", "designation": "43"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:44", "categorie_id": "RefCategorieDesordre:3", "libelle": "Vide important entre blocs d'enrochement", "abrege": "VID", "designation": "44"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:45", "categorie_id": "RefCategorieDesordre:3", "libelle": "Nid de poule", "abrege": "NID", "designation": "45"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:46", "categorie_id": "RefCategorieDesordre:6", "libelle": "Canalisation traversante", "abrege": "CAT", "designation": "46"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:47", "categorie_id": "RefCategorieDesordre:6", "libelle": "Canalisation longitudinale", "abrege": "CAL", "designation": "47"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:48", "categorie_id": "RefCategorieDesordre:5", "libelle": "Labour", "abrege": "LAB", "designation": "48"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:49", "categorie_id": "RefCategorieDesordre:5", "libelle": "Remblais non autorisé contre la digue", "abrege": "REM", "designation": "49"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:50", "categorie_id": "RefCategorieDesordre:5", "libelle": "Présence de végétation gênante", "abrege": "VEG", "designation": "50"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:51", "categorie_id": "RefCategorieDesordre:1", "libelle": "Piétinements anthropiques", "abrege": "PIT", "designation": "51"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:52", "categorie_id": "RefCategorieDesordre:5", "libelle": "Escalier sauvage", "abrege": "ESS", "designation": "52"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:53", "categorie_id": "RefCategorieDesordre:3", "libelle": "Souches", "abrege": "SOU", "designation": "53"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:54", "categorie_id": "RefCategorieDesordre:5", "libelle": "Escalier maçonné dans la digue", "abrege": "ESC", "designation": "54"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:55", "categorie_id": "RefCategorieDesordre:5", "libelle": "Mur de soutènement", "abrege": "MUR", "designation": "55"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:56", "categorie_id": "RefCategorieDesordre:4", "libelle": "En limite de surverse", "abrege": "ELS", "designation": "56"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:57", "categorie_id": "RefCategorieDesordre:1", "libelle": "Affouillement", "abrege": "AFF", "designation": "57"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:58", "categorie_id": "RefCategorieDesordre:7", "libelle": "Anomalie sur matelas de gabions", "abrege": "AMG", "designation": "58"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:59", "categorie_id": "RefCategorieDesordre:7", "libelle": "Enrochement gélif", "abrege": "ERG", "designation": "59"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:60", "categorie_id": "RefCategorieDesordre:7", "libelle": "Anomalie sur géo-grille", "abrege": "AGG", "designation": "60"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:61", "categorie_id": "RefCategorieDesordre:7", "libelle": "Anomalie sur matériaux drainant", "abrege": "AMD", "designation": "61"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:62", "categorie_id": "RefCategorieDesordre:7", "libelle": "Anomalie sur couvert végétal", "abrege": "ACV", "designation": "62"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:63", "categorie_id": "RefCategorieDesordre:4", "libelle": "Défaut de bouclage de la digue (lien avec structure adjacente inexistant...)", "abrege": "DBD", "designation": "63"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:64", "categorie_id": "RefCategorieDesordre:5", "libelle": "Défaut d'entretien de la végétation", "abrege": "DEV", "designation": "64"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:65", "categorie_id": "RefCategorieDesordre:6", "libelle": "Ouvrage hydraulique privé (morceaux de digues, merlon...)", "abrege": "OHP", "designation": "65"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:66", "categorie_id": "RefCategorieDesordre:5", "libelle": "Absence/désorganisation sucres bétons", "abrege": "SUC", "designation": "66"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:67", "categorie_id": "RefCategorieDesordre:6", "libelle": "Dysfonctionnement d’ouvrage hydraulique", "abrege": "DOH", "designation": "67"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:68", "categorie_id": "RefCategorieDesordre:6", "libelle": "Géométrie de la digue non adaptée", "abrege": "GDA", "designation": "68"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:69", "categorie_id": "RefCategorieDesordre:5", "libelle": "Occupation sauvage de l’ouvrage", "abrege": "OSO", "designation": "69"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:70", "categorie_id": "RefCategorieDesordre:5", "libelle": "Végétation invasive", "abrege": "VEI", "designation": "70"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:71", "categorie_id": "RefCategorieDesordre:1", "libelle": "Détérioration/dégradation de surface (trous, bauges etc.)", "abrege": "DTS", "designation": "71"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:72", "categorie_id": "RefCategorieDesordre:7", "libelle": "Anomalie sur Grillage Anti-fouisseur", "abrege": "AGA", "designation": "72"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:73", "categorie_id": "RefCategorieDesordre:5", "libelle": "Défaut sur batardeau et/ou glissière (manquant, dégradé, cassé etc.)", "abrege": "DFB", "designation": "73"}
+    %% VALUE {"table": "referentiel__types_desordre", "id": "RefTypeDesordre:99", "categorie_id": "RefCategorieDesordre:6", "libelle": "Indéfini", "abrege": "IND", "designation": "99"}
+    %% VALUE {"table": "referentiel__types_equipement_mesure", "id": "PIE", "code": "piezometre", "abrege": "PIE", "libelle": "Piézomètre"}
+    %% VALUE {"table": "referentiel__types_equipement_mesure", "id": "ECH", "code": "echelle_limnimetrique", "abrege": "ECH", "libelle": "Échelle limnimétrique"}
+    %% VALUE {"table": "referentiel__types_equipement_mesure", "id": "STA", "code": "station_mesure", "abrege": "STA", "libelle": "Station de mesure"}
+    %% VALUE {"table": "referentiel__types_equipement_mesure", "id": "RDN", "code": "repere_nivellement", "abrege": "RDN", "libelle": "Repère de nivellement"}
+    %% VALUE {"table": "referentiel__types_equipement_mesure", "id": "AUT", "code": "autre", "abrege": "AUT", "libelle": "Autre équipement de mesure"}
+    %% VALUE {"table": "referentiel__types_equipement_mesure", "id": "IND", "code": "indefini", "abrege": "IND", "libelle": "Équipement de mesure indéfini"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "VAN", "code": "vanne", "abrege": "VAN", "libelle": "Vanne"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "CLA", "code": "clapet", "abrege": "CLA", "libelle": "Clapet"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "POS", "code": "poste_refoulement", "abrege": "POS", "libelle": "Poste de refoulement"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "STP", "code": "station_pompage", "abrege": "STP", "libelle": "Station de pompage"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "SIH", "code": "siphon", "abrege": "SIH", "libelle": "Siphon"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "EXR", "code": "exutoire", "abrege": "EXR", "libelle": "Exutoire"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "DEV", "code": "deversoir", "abrege": "DEV", "libelle": "Déversoir"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "DVS", "code": "deversoir_securite", "abrege": "DVS", "libelle": "Déversoir de sécurité"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "VBT", "code": "ouverture_batardable", "abrege": "VBT", "libelle": "Ouverture batardable"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "PAF", "code": "porte_a_flot", "abrege": "PAF", "libelle": "Porte à flot"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "BBN", "code": "barbacane", "abrege": "BBN", "libelle": "Barbacane"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "TTB", "code": "tete_buse", "abrege": "TTB", "libelle": "Tête de buse"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "TVI", "code": "tour_vidange", "abrege": "TVI", "libelle": "Tour de vidange"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "FOD", "code": "fosse_decantation", "abrege": "FOD", "libelle": "Fosse de décantation"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "PAS", "code": "passe_poissons", "abrege": "PAS", "libelle": "Passe à poissons"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "SLT", "code": "seuil_lit", "abrege": "SLT", "libelle": "Seuil de lit"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "PDL", "code": "plage_depot_lit", "abrege": "PDL", "libelle": "Plage de dépôt"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "AUT", "code": "autre", "abrege": "AUT", "libelle": "Autre ouvrage hydraulique"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "IND", "code": "indefini", "abrege": "IND", "libelle": "Ouvrage hydraulique indéfini"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "PRISE_D_EAU", "code": "prise_d_eau", "abrege": "PDE", "libelle": "Prise d'eau"}
+    %% VALUE {"table": "referentiel__types_ouvrage_hydraulique", "id": "OUVRAGE_HYDRAULIQUE", "code": "ouvrage_hydraulique", "abrege": "OHY", "libelle": "Ouvrage hydraulique"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:2", "code": "BAT", "libelle": "Bâtiment encastré ou très proche de la digue", "designation": "2"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:3", "code": "ESC", "libelle": "Escalier", "designation": "3"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:4", "code": "CAV", "libelle": "Cave encastrée dans la digue", "designation": "4"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:6", "code": "CLO", "libelle": "Clôture privée (mur barbelé, grillage) encastrée dans la digue", "designation": "6"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:7", "code": "PON", "libelle": "Ponton pour embarcation", "designation": "7"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:8", "code": "PAN", "libelle": "Panneau d'information divers (EDF...)", "designation": "8"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:10", "code": "OUI", "libelle": "Ouvrage indéfini", "designation": "10"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:11", "code": "MOU", "libelle": "Monument (calvaire, monument aux morts, statue, ...)", "designation": "11"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:12", "code": "BOK", "libelle": "Borne PK", "designation": "12"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:14", "code": "SOB", "libelle": "Socle en béton", "designation": "14"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:15", "code": "BRE", "libelle": "Borne réseau d'eau", "designation": "15"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:17", "code": "PAS", "libelle": "Passe à poissons", "designation": "17"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:19", "code": "OUA", "libelle": "Ouvrage d'alimentation de CIC", "designation": "19"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:20", "code": "MRE", "libelle": "Mobilier à usage récréatif", "designation": "20"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:21", "code": "PAA", "libelle": "Panneau d'alerte", "designation": "21"}
+    %% VALUE {"table": "referentiel__types_ouvrage_particulier", "id": "RefOuvrageParticulier:99", "code": "IND", "libelle": "Indéfini", "designation": "99"}
+    %% VALUE {"table": "referentiel__types_troncon", "id": "BERGE", "code": "BERGE", "libelle": "Berge", "designation": null}
+    %% VALUE {"table": "referentiel__types_troncon", "id": "TALUS", "code": "TALUS", "libelle": "Talus", "designation": null}
+    %% VALUE {"table": "referentiel__types_troncon", "id": "TALUS_RISBERME", "code": "TALUS_RISBERME", "libelle": "Talus de risberme", "designation": null}
+    %% VALUE {"table": "referentiel__types_troncon", "id": "RISBERME", "code": "RISBERME", "libelle": "Risberme", "designation": null}
+    %% VALUE {"table": "referentiel__types_troncon", "id": "CRETE", "code": "CRETE", "libelle": "Crête", "designation": null}
+    %% VALUE {"table": "referentiel__types_troncon", "id": "FRANC_BORD", "code": "FRANC_BORD", "libelle": "Franc-bord", "designation": null}
+    %% VALUE {"table": "referentiel__types_troncon", "id": "INDETERMINE", "code": "INDETERMINE", "libelle": "Indéterminé", "designation": null}
+    %% VALUE {"table": "referentiel__typologies_troncon", "id": "RefTypologieTroncon:1", "designation": "1", "abrege": "TER", "libelle": "Terre"}
+    %% VALUE {"table": "referentiel__typologies_troncon", "id": "RefTypologieTroncon:2", "designation": "2", "abrege": "TEN", "libelle": "Terre – enrochement"}
+    %% VALUE {"table": "referentiel__typologies_troncon", "id": "RefTypologieTroncon:3", "designation": "3", "abrege": "PAL", "libelle": "Palplanche"}
+    %% VALUE {"table": "referentiel__typologies_troncon", "id": "RefTypologieTroncon:4", "designation": "4", "abrege": "GCI", "libelle": "Génie-Civil"}
+    %% VALUE {"table": "referentiel__typologies_troncon", "id": "RefTypologieTroncon:99", "designation": "99", "abrege": "AUT", "libelle": "Autre"}
+    %% VALUE {"table": "referentiel__urgences", "id": "RefUrgence:1", "libelle": "Faible", "abrege": "0", "designation": "1"}
+    %% VALUE {"table": "referentiel__urgences", "id": "RefUrgence:3", "libelle": "Intermédiaire", "abrege": "2", "designation": "3"}
+    %% VALUE {"table": "referentiel__urgences", "id": "RefUrgence:4", "libelle": "Élevée", "abrege": "3", "designation": "4"}
+    %% VALUE {"table": "referentiel__urgences", "id": "RefUrgence:99", "libelle": "Indéfini", "abrege": "IND", "designation": "99"}

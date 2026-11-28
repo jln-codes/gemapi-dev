@@ -1,0 +1,7 @@
+model/*.pdf binary
+model/schema_v*.sql text eol=lf
+model/schema_v*.mmd text eol=lf
+demo/gpkg/*.gpkg binary
+demo/*.qgz binary
+demo/data/*.sql text eol=lf
+demo/data/importer_base_neuve.sh text eol=lf

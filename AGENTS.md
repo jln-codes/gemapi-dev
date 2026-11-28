@@ -1,6 +1,6 @@
-# AGENTS.md — Contrat de travail proposé pour gemapi-dev
+# AGENTS.md — Contrat de travail pour gemapi-dev
 
-**Statut : validé.** GEMAPI-INIT-00 et la révision de digues-app `eecec0a44f25a908484b76f838a7e2be0c8cfee5` sont validés. Exécuter successivement GEMAPI-INIT-01 à GEMAPI-INIT-04 sur `development` avec commits locaux, puis s’arrêter après le rapport de synthèse. Les arbitrages ouverts suspendent la seule partie concernée. Le responsable du projet décide du périmètre fonctionnel et des choix d’architecture encore ouverts. Aucun push ni déploiement.
+**Statut validé.** Le premier lot est clos à `e0240ff`. Le responsable autorise INIT-05, INIT-06 et QGIS-01 sur `development`, avec commits locaux et arrêt après bilan. Source SIG validée à `90bf36947be15f834905f20f73148adc9c45d197`. Toute publication ou suite demande un nouvel accord.
 
 ## Périmètre et sources
 
@@ -12,10 +12,13 @@
 
 ## Architecture et données
 
-- Une instance dessert un contexte métier et une base PostgreSQL/PostGIS choisie par la configuration serveur de déploiement. Démo et réel sont des instances séparées. Les rôles applicatif et de lecture restreinte peuvent viser la même base selon les fonctions autorisées. Le navigateur ne choisit jamais le serveur ni les credentials.
+- Le produit commun comprend la webapp desktop/PWA, le modèle PostgreSQL/PostGIS, sa démonstration, le plugin QGIS et le générateur QGZ. Les interfaces partagent le SQL métier et peuvent proposer des fonctionnalités différentes.
+- L’accueil proposera la connexion au réel et un accès permanent à la démo, suivant l’ergonomie de Digues. Le choix entre deux instances et deux connexions serveur prédéfinies reste ouvert. Le navigateur ne fournit aucun identifiant de connexion et aucun catalogue de bases n’est exposé.
+- La cible est un schéma dédié dans une base éventuellement partagée. Hôte, port, base, schéma et authentification se règlent indépendamment. Le DBA choisit l’emplacement de PostGIS et les groupes de cluster. L’installation explicite conserve le DDL v0.6.1 comme référence unique.
+- La future distribution web fournira le ZIP QGIS et un projet de l’environnement actif. Les secrets du backend restent exclus des fichiers distribués. Les modalités d’accès QGIS au réel et l’identité web restent à arbitrer.
 - Conserver FastAPI, la structure frontend Carte/Base, Leaflet, le service de rendu MapLibre, les fonds IGN, caches, météo, hydrométrie, LiDAR, fonctionnalités GPS, géométries, photos, communication inter-pages, PWA, SW, hors ligne et tests. Préserver Docker et Docker Compose. Toute refonte, nouvelle dépendance de principe, remplacement de framework ou suppression hors périmètre C requiert validation.
 - Exclure base de contrôle, tenants, découverte/routage de bases, provisioning, quotas par base, écrans et opérations de création, suppression ou restauration de bases dans l’application. Le budget global d’un cache, la limite d’un upload, le contrôle d’accès et la supervision technique répondent à des besoins distincts à préserver.
-- PostgreSQL/PostGIS est l’autorité métier. Recevoir du projet gemapi-app-sirs la version **stabilisée** du schéma et le jeu fictif **aligné**. Intégrer les livraisons identifiées dans gemapi-dev. Leur démo est le jeu de référence pour développer, tester et qualifier. Différer les formulaires, liaisons de couches et règles SQL métier jusqu’à ces livraisons. Un diagramme de travail, un ancien seed ou un champ homonyme n’autorise pas à déduire un contrat.
+- La v0.6.1 et sa démonstration fictive alignée constituent la référence PostgreSQL/PostGIS commune. L’adaptation des couches, formulaires, règles SQL et opérations hors ligne de la webapp nécessite un chantier ultérieur.
 - Aucun schéma métier intermédiaire, modèle concurrent, correction du jeu source, fixture dérivée de données réelles ou correspondance historique exhaustive. Un besoin technique de journal, de version ou d’index se soumet au responsable du schéma. Les éventuelles installations et mises à niveau techniques de versions SQL sont explicites et dissociées du démarrage.
 - L’intégration des données historiques réelles se traite en dernier, hors de ce dépôt. Exclure migrateur, diagnostics, jobs, transferts et scripts associés, y compris de l’image, des tests et de la documentation d’exploitation. Ne pas étudier de données réelles ni élaborer de contrat de migration historique.
 
