@@ -2,7 +2,7 @@
 
 Socle FastAPI, Leaflet et MapLibre Native pour Carte et Base. Les fonds publics
 restent accessibles. L’accès aux données, aux médias et aux outils protégés
-reste fermé pendant la définition de l’authentification web.
+reste fermé jusqu’à la qualification de chaque opération métier.
 
 ## Démarrer sur la machine locale
 
@@ -13,7 +13,7 @@ docker compose up --build
 L’image FastAPI utilise Python et GDAL de Debian trixie dans un environnement
 virtuel dédié à l’application.
 
-Ouvrir http://127.0.0.1:8080/carte ou http://127.0.0.1:8080/base. Pour un autre
+Ouvrir http://127.0.0.1:8080/ pour se connecter. Les pages /carte et /base servent aussi le shell technique public. Pour un autre
 port local, renseigner `GEMAPI_PORT`. Le proxy publie seulement sur la boucle
 locale. Le renderer et FastAPI restent sur le réseau Compose. Les fonds IGN
 nécessitent un accès aux services cartographiques publics. Le sélecteur signale
@@ -25,8 +25,7 @@ une panne d’Épuré.
 Le socle démarre sans PostgreSQL. La connexion métier de chaque instance utilise `DATABASE_URL` et
 `DATABASE_SCHEMA` dans sa configuration privée. Les DSN facultatifs
 `DATABASE_READONLY_URL` et `DATABASE_AI_READONLY_URL` doivent viser la même
-base avec les rôles restreints correspondants. Ni connexion SQL ni installation
-de schéma ne sont effectuées au démarrage. Les instances démo et réelle
+base avec les rôles restreints correspondants. La production démarre sans connexion SQL. Seul le préremplissage optionnel de démonstration vérifie son compte public au démarrage. L’installation SQL est explicite. Voir le [contrat de connexion et d’exploitation](docs/GEMAPI-AUTH.md). Les instances démo et réelle
 auront chacune leur origine, leur configuration et leurs volumes.
 
 Le volume `media` est privé et distinct du volume de cache cartographique.

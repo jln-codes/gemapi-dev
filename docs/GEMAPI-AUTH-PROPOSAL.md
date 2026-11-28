@@ -1,5 +1,7 @@
 # INIT-06B — Contrat proposé pour l’authentification web PostgreSQL
 
+Étude historique validée à `9e2a29a`. Les paramètres et décisions applicables figurent dans le [contrat INIT-06B](GEMAPI-AUTH.md).
+
 **Décision demandée.** Retenir une connexion PostgreSQL individuelle par session web active (option A), liée exclusivement à cette session jusqu’à fermeture. Cette proposition concerne l’accès en ligne. L’authentification PostgreSQL commune avec QGIS, les trois profils de `model/` et l’instance monobase sont déjà décidés. Les routes métier restent fermées jusqu’à leur qualification propre. [Constats, comparaison et essais](../audits/GEMAPI-INIT-06B-AUDIT.md)
 
 ## Entrée et preuve d’identité
