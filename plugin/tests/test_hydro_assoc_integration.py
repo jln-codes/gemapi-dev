@@ -53,7 +53,7 @@ class HydroAssociationTests(unittest.TestCase):
         cls.addClassCleanup(cls.db.close)
         cls.q("CREATE SCHEMA extensions; CREATE EXTENSION postgis WITH SCHEMA extensions;")
         cls.q((ROOT / "model/schema_v0.6.1.sql").read_text())
-        cls.q((ROOT / "model/roles_milieux.sql").read_text())
+        cls.q((ROOT / "model/roles.sql").read_text())
         # Match deployed QGIS logins: the provider resolves PostGIS functions
         # through its login search_path, independently of our SQL test cursor.
         cls.q("ALTER DATABASE postgres SET search_path=pg_catalog,extensions,public,gemapi")

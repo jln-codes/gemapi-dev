@@ -106,7 +106,7 @@ END $guard$;
 def permissions(schema, roles):
     if len(roles) != 3 or len(set(roles)) != 3:
         raise ValueError("Fournir trois groupes DBA distincts")
-    source = (MODEL / "roles_milieux.sql").read_text()
+    source = (MODEL / "roles.sql").read_text()
     source = source[source.index("-- Droit de lecture commun"):source.index("COMMIT;")]
     reader = identifier(roles[0])
     # Le propriétaire des objets peut appliquer les GRANT sans CREATEROLE.

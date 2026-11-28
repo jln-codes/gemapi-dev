@@ -1,5 +1,5 @@
--- roles_milieux.sql — PostgreSQL 16+ / schéma applicatif gemapi
--- À exécuter par l'administrateur de la base, APRÈS model/schema.sql.
+-- roles.sql — PostgreSQL 16+ / schéma applicatif gemapi
+-- À exécuter par l'administrateur de la base, APRÈS model/schema_v0.6.1.sql.
 -- Ne crée aucun utilisateur individuel et ne modifie aucune fiche technicien.
 BEGIN;
 SELECT pg_catalog.set_config('search_path',pg_catalog.format('pg_catalog,%I,gemapi,pg_temp',n.nspname),true)

@@ -187,7 +187,7 @@ def main():
         else:
             raise RuntimeError("PostGIS jetable indisponible")
         install_demo(container, dedicated_postgis=dedicated)
-        setup = (ROOT / "model/roles_milieux.sql").read_text() + "\nCREATE ROLE qgis_technicien LOGIN IN ROLE milieux_prestations;\n"
+        setup = (ROOT / "model/roles.sql").read_text() + "\nCREATE ROLE qgis_technicien LOGIN IN ROLE milieux_prestations;\n"
         for table, col, code in (("mobilier", "type_id", "PAN"), ("cheminements", "type_cheminement_id", "PAS"),
                                ("vegetation", "famille_vegetation", "ARBRES")):
             setup += (f"INSERT INTO gemapi.{table}(designation,{col},geometry,ah_section_id) "

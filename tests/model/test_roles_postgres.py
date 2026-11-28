@@ -57,8 +57,8 @@ def main():
             with connect() as db, db.cursor() as c:
                 c.execute(f'CREATE SCHEMA IF NOT EXISTS {extension}; CREATE EXTENSION postgis WITH SCHEMA {extension}')
                 c.execute((ROOT/'model/schema_v0.6.1.sql').read_text())
-                c.execute((ROOT/'model/roles_milieux.sql').read_text())
-                c.execute((ROOT/'model/roles_milieux.sql').read_text())
+                c.execute((ROOT/'model/roles.sql').read_text())
+                c.execute((ROOT/'model/roles.sql').read_text())
                 for login, group in PROFILES.items():
                     c.execute('SELECT 1 FROM pg_roles WHERE rolname=%s', (login,))
                     if not c.fetchone():

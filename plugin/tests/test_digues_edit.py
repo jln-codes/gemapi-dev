@@ -81,7 +81,7 @@ def main():
     try:
         with database() as (container, port, db), tempfile.TemporaryDirectory(dir=OUTPUT) as tmp:
             db.set_client_encoding('UTF8')
-            sql(container, (ROOT/'model/roles_milieux.sql').read_text())
+            sql(container, (ROOT/'model/roles.sql').read_text())
             sql(container, 'CREATE ROLE edit02_reader LOGIN IN ROLE milieux_consultation; '
                            'CREATE ROLE edit02_prestations LOGIN IN ROLE milieux_prestations; '
                            'CREATE ROLE edit02_patrimoine LOGIN IN ROLE milieux_patrimoine;')

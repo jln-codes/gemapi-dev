@@ -1,10 +1,14 @@
 # gemapi-dev — Feuille de route de dérivation
 
-**Lot en validation.** INIT-00 à 04 sont clos à `e0240ff`. INIT-05, INIT-06 et QGIS-01 ont intégré la livraison `90bf36947be15f834905f20f73148adc9c45d197`. PUBLICATION-01 prépare la publication locale. La mise en ligne, le déploiement et les chantiers suivants restent soumis à validation.
+**État des chantiers.** INIT-00 à 04 sont clos à `e0240ff`. INIT-05, INIT-06 et QGIS-01 ont intégré la livraison `90bf36947be15f834905f20f73148adc9c45d197`. Le bilan de ces trois chantiers est à `56c1f49`. PUBLICATION-01 est clos à `1d417bd`. La mise en ligne, le déploiement et les chantiers suivants restent soumis à validation.
 
-La webapp desktop/PWA et QGIS partagent le modèle SQL, sa démo et les référentiels. Les parcours peuvent évoluer indépendamment. Chaque instance utilise une seule connexion métier et un seul schéma configurable au déploiement. La démo permanente sur gemapi.dev et les productions indépendantes partagent le code. L’accueil sera un écran de connexion simple. La configuration propre à la démo pourra préremplir ses identifiants web de démonstration. Les comptes de production et les secrets PostgreSQL du backend sont exclus. Aucune sélection d’environnement, découverte, administration ou sélection de bases. Le migrateur reste externe. L’authentification web définitive reste différée.
+La webapp desktop/PWA et QGIS partagent le modèle SQL, sa démo et les référentiels. Les parcours peuvent évoluer indépendamment. Chaque instance utilise une seule connexion métier et un seul schéma configurable au déploiement. La démo permanente sur gemapi.dev et les productions indépendantes partagent le code. L’accueil sera un écran de connexion simple. La configuration propre à la démo pourra préremplir ses identifiants web de démonstration. Les comptes de production et les secrets PostgreSQL du backend sont exclus. Aucune sélection d’environnement, découverte, administration ou sélection de bases. Le migrateur reste externe. PostgreSQL est l’autorité commune d’authentification et de permissions. L’utilisateur saisit uniquement ses identifiants PostgreSQL individuels, également utilisables dans QGIS. Le serveur fixe hôte, port, base et schéma.
 
 La cible 05 accepte un schéma vide attribué dans une base partagée. La qualification couvre deux destinations coexistantes, deux emplacements de PostGIS, le refus d’une destination occupée, les objets tiers, les profils SQL et le démarrage sans DDL. Le port, le serveur, la base, le schéma et les paramètres privés sont indépendants. En 06, reconstruire depuis le clone et comparer les empreintes des données livrées.
+
+**Portabilité PostgreSQL/PostGIS, applicable à tous les chantiers.** Le même code et les mêmes images Docker précompilées doivent fonctionner avec PostgreSQL en conteneur local, installé directement sur la machine hôte, sur un serveur distant, en service managé (dont Supabase) ou dans un schéma dédié d’une base institutionnelle partagée. La DSI peut héberger PostgreSQL et la webapp sur une même machine ou sur des machines distinctes. Le passage d’une implantation à l’autre relève uniquement de la configuration du déploiement et de l’accès réseau, sans adaptation du code, branche spécifique, recompilation ni recours à une API propriétaire du fournisseur.
+
+Maintenir des réglages de connexion indépendants du modèle métier, de l’authentification web et du stockage des médias. Réserver l’installation et la maintenance SQL aux opérations explicites. Les parcours applicatifs doivent fonctionner avec le schéma configuré et les droits du compte de fonctionnement, y compris sur une connexion à forte latence. Pour les listes et leurs relations, regrouper les lectures afin d’éviter un aller-retour SQL par objet.
 
 | Filière QGIS | Acceptation |
 |---|---|
@@ -19,7 +23,7 @@ Cette filière peut avancer en parallèle des futurs chantiers métier web aprè
 
 | Disponibilité | Chantiers | Résultat attendu |
 |---|---|---|
-| Avant le SQL définitif et la démo actualisée | 01 à 04 | Sources traçables, pile monobase, identité visuelle, socle testé en environnement local isolé. La décision d’authentification conditionne les accès protégés. |
+| Avant le SQL définitif et la démo actualisée | 01 à 04 | Sources traçables, pile monobase, identité visuelle, socle testé en environnement local isolé. L’ouverture des accès protégés dépend de la validation puis de la qualification des sessions et des opérations. |
 | À réception du SQL stabilisé | 05 | Installation neuve et exploitation sans DDL par le runtime. Peut précéder la livraison des données. |
 | À réception de la démo alignée | 06 à 09 | Jeu de référence reproductible, consultation puis édition en ligne, enfin travail terrain avec reprise. |
 | Après recette et accord d’hébergement | 10 | Démonstration qualifiée et déploiement explicitement autorisé. |
@@ -42,7 +46,7 @@ Cette filière peut avancer en parallèle des futurs chantiers métier web aprè
 
 **Acceptation et tests.** Tester depuis la wheel et l’image installée. Le build et le démarrage fonctionnent sans `digues_control`, fichier de profils, worker, catalogue SIRS ou modèle Digues obligatoire au démarrage. Vérifier les routes réellement enregistrées, les commandes de l’image, le Compose résolu et les requêtes du navigateur. Un sélecteur d’URL ne change jamais de base. Vérifier anonymat refusé, lecture autorisée, écriture interdite au lecteur, contrôle d’origine, révocation pendant une session et un flux. Tester deux utilisateurs successifs sur le même navigateur. Adapter `test_auth.py`, `test_business_context.py`, `business-startup.spec.js` et les contrôles de déploiement. Si l’identité reste indécise, maintenir les fonctions protégées fermées et déclarer cette partie du lot en attente.
 
-**Arrêt et décision humaine.** Faire valider mécanisme d’authentification, autorisations, attribution de l’auteur et accès simplifié éventuel à la démo. Si une voie exige de réintroduire le contrôle, un accès anonyme ou un second schéma métier, arrêter cette voie. Les réglages photo, LiDAR et cache auparavant administrés restent à raccorder à un support approuvé.
+**Arrêt et décision humaine.** Appliquer la décision INIT-06B sur l’identité PostgreSQL commune. Faire valider la stratégie de session, l’attribution effective et les droits du compte public de démonstration. Si une voie exige de réintroduire le contrôle, un accès anonyme ou un second schéma métier, arrêter cette voie. Les réglages photo, LiDAR et cache auparavant administrés restent à raccorder à un support approuvé.
 
 ### 03 — Intégrer le branding validé
 
@@ -84,6 +88,14 @@ Cette filière peut avancer en parallèle des futurs chantiers métier web aprè
 
 **Arrêt et décision humaine.** Provenance incertaine, donnée identifiable réelle, incohérence avec 05 ou résultat attendu manquant pour qualifier un parcours. Faire corriger ou préciser la livraison par son propriétaire. Ne pas réparer les données du donneur.
 
+### INIT-06B — Étudier l’authentification PostgreSQL commune et les sessions
+
+Conserver dans `model/` les trois profils Consultation, Prestations et Patrimoine. Les deux interfaces exploitent les permissions SQL effectives et leurs opérations conservent leurs contrôles applicatifs. Aucun annuaire, mot de passe applicatif indépendant, service externe, SSO ou administration de comptes web. Préremplissage exclusivement par configuration explicite de l’instance de démonstration avec son compte public dédié.
+
+Comparer les connexions individuelles et la délégation, vérifier l’attribution et la révocation sur PostgreSQL jetable. La validation humaine de la stratégie précède l’implémentation. Les routes métier restent fermées. [Audit](../audits/GEMAPI-INIT-06B-AUDIT.md) · [Contrat proposé](GEMAPI-AUTH-PROPOSAL.md)
+
+Pour toute évolution du modèle métier ou des permissions communes, analyser l’impact sur le SQL unique, le Mermaid, la documentation, les données de démonstration, la webapp, le plugin QGIS et le générateur QGZ. Adapter et qualifier les composants concernés avant validation. Préserver les périmètres Apache 2.0 du socle web et GPL-2.0-or-later des apports originaux du plugin.
+
 ### 07 — Relier les couches et vues de consultation
 
 **Objectif et périmètre.** Pour chaque parcours de lecture validé, relier catalogue de couches, requête SQL, API/GeoJSON, filtres, légende, fiche Base, relations et sélection Carte/Base. Raccorder les services territoriaux, les masques LiDAR et les exports de lecture retenus.
@@ -120,6 +132,10 @@ Cette filière peut avancer en parallèle des futurs chantiers métier web aprè
 
 **Prérequis et dépendances.** Lots antérieurs qualifiés pour le périmètre retenu. Décisions d’hébergement, exposition de la démo, domaine, réseau et TLS vers PostgreSQL, accès fournisseurs, comptes d’exploitation et responsabilités de sauvegarde validés. Le scénario prioritaire est VPS applicatif et PostgreSQL/PostGIS de la collectivité. Tester le scénario retenu, sans dépendre d’API d’hébergeur.
 
-**Acceptation et tests.** Depuis un clone propre reconstruire image, schéma et démo. Recette complète Playwright, API/PostGIS, cartes, photos, impressions/exports retenus, GPS/PWA sur matériels convenus, coupure et reprise du réseau vers PG, contrôle de droits, redémarrage sans DDL et restauration isolée. Vérifier Caddy, certificats, flux SSE, caches et persistance après redémarrage. Présenter résultats et réserves avant publication. Après accord explicite, déployer **la démo** et vérifier les accès et parcours sur l’instance livrée.
+**Acceptation et tests.** Vérifier la construction des images depuis un clone propre. Reconstruire le même modèle et la même démo sur deux bases jetables, l’une locale et l’autre sur un serveur distant. Rejouer les mêmes parcours applicatifs avec les mêmes images précompilées, en changeant uniquement la configuration et les accès réseau. Consigner les digests de chaque image dans les deux essais, les résultats fonctionnels et l’effet de la latence sur les parcours de liste. Recette complète Playwright, API/PostGIS, cartes, photos, impressions/exports retenus, GPS/PWA sur matériels convenus, coupure et reprise du réseau vers PG, contrôle de droits, redémarrage sans DDL et restauration isolée. Vérifier Caddy, certificats, flux SSE, caches et persistance après redémarrage. Présenter résultats et réserves avant publication. Après accord explicite, déployer **la démo** et vérifier les accès et parcours sur l’instance livrée.
 
 **Arrêt et décision humaine.** Tout effet sur un environnement permanent, toute publication et la mise en service demandent une autorisation visant cet environnement. Un échec d’intégrité, de confidentialité, de reprise ou de restauration suspend la diffusion. Les données historiques réelles relèvent d’un chantier externe ultérieur à la qualification de la webapp.
+
+### GEMAPI-DEPLOY-01 — Construire et publier les images Docker (chantier futur)
+
+Après autorisation, automatiser la construction des images applicatives avec GitHub Actions et leur publication sur GitHub Container Registry (GHCR). Pour chaque version, associer les digests publiés à la révision source afin que les déploiements locaux et distants puissent récupérer exactement les images qualifiées. Les paramètres de connexion PostgreSQL sont fournis au déploiement.
