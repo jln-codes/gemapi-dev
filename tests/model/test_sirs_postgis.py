@@ -338,6 +338,8 @@ class Qualification:
             self.assertEqual(c.fetchone(), (None, False))
 
     def test_droits_par_defaut_du_schema_neuf(self):
+        with self.assertRaisesRegex(ValueError, "réservé"):
+            install.install("$user")
         self.c.execute("ALTER DEFAULT PRIVILEGES GRANT CREATE ON SCHEMAS TO PUBLIC")
         with self.rejected("P0001", message="CREATE accordé"):
             self.c.execute(install.install("destination_ouverte"))

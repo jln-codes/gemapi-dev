@@ -52,7 +52,7 @@ class PostgreSQLConfig:
             raise WebDatabaseConfigurationError("DATABASE_URL doit être renseignée.")
         schema = os.getenv("DATABASE_SCHEMA", "gemapi")
         if (not schema or len(schema.encode()) > 63 or "\x00" in schema
-                or schema.startswith("pg_") or schema == "information_schema"):
+                or schema.startswith("pg_") or schema in {"information_schema", "$user"}):
             raise WebDatabaseConfigurationError("DATABASE_SCHEMA invalide.")
         return cls(dsn, schema=schema)
 
@@ -333,6 +333,8 @@ def prepare_model(cursor, schema):
     if not status:
         raise WebDatabaseSchemaError("Extension PostGIS absente.")
     extension, oid, usage, extension_usage = status
+    if extension == "$user" or schema == "$user":
+        raise WebDatabaseSchemaError("Nom de schéma réservé par le chemin de recherche PostgreSQL.")
     if oid is None:
         raise WebDatabaseSchemaError("Schéma applicatif absent.")
     if not usage or not extension_usage:

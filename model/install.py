@@ -48,7 +48,7 @@ def render(source, schema, roles=()):
 
 
 def trusted_path(schema):
-    if schema.startswith("pg_") or schema == "information_schema":
+    if schema.startswith("pg_") or schema in {"information_schema", "$user"}:
         raise ValueError("Schéma système réservé")
     return f"""
 SET LOCAL search_path = pg_catalog, pg_temp;
@@ -59,6 +59,7 @@ BEGIN
   SELECT n.nspname INTO ext FROM pg_extension e JOIN pg_namespace n ON n.oid=e.extnamespace
    WHERE e.extname='postgis';
   IF ext IS NULL THEN RAISE EXCEPTION 'PostGIS absent, installation réservée au DBA'; END IF;
+  IF ext='$user' THEN RAISE EXCEPTION 'Schéma PostGIS incompatible avec search_path'; END IF;
   IF dest=ext THEN RAISE EXCEPTION 'Les schémas métier et PostGIS doivent être distincts'; END IF;
   IF EXISTS (SELECT FROM pg_namespace n, LATERAL aclexplode(coalesce(n.nspacl,acldefault('n',n.nspowner))) a
              WHERE n.nspname IN (ext,dest) AND a.privilege_type='CREATE' AND a.grantee<>n.nspowner)
