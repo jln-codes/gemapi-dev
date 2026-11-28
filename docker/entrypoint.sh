@@ -20,7 +20,8 @@ if [ "$(id -u)" = "0" ]; then
             chown -R "$APP_UID:$APP_GID" "$MEDIA_ROOT"
         fi
     fi
-    exec setpriv --reuid="$APP_UID" --regid="$APP_GID" --init-groups "$@"
+    # libpq cherche les certificats privés dans le répertoire du compte effectif.
+    exec setpriv --reuid="$APP_UID" --regid="$APP_GID" --init-groups env HOME=/home/appuser "$@"
 fi
 
 exec "$@"

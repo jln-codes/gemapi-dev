@@ -58,4 +58,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5).read()"
 
 ENTRYPOINT ["/usr/local/bin/gemapi-entrypoint.sh"]
-CMD ["python", "-m", "uvicorn", "digues_webapp.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "digues_webapp.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--lifespan", "on", "--no-access-log"]

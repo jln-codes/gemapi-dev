@@ -32,12 +32,15 @@ class InstanceAccessTest(TestCase):
                     self.assertEqual(response.status_code, 403)
                     self.assertEqual(response.headers["Cache-Control"], "no-store")
 
-    def test_no_old_routing_login_or_worker_api(self):
+    def test_login_requires_a_valid_origin(self):
+        response = self.client.post("/api/auth/login", json={})
+        self.assertEqual(response.status_code, 403)
+
+    def test_no_old_routing_or_worker_api(self):
         for method, path in (
             ("GET", "/api/bases"),
             ("GET", "/api/bases/autre/troncons"),
             ("GET", "/api/auth/databases"),
-            ("POST", "/api/auth/login"),
             ("POST", "/api/import-sirs"),
             ("GET", "/api/admin/jobs"),
             ("GET", "/internal/cache-admin"),

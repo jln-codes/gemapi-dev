@@ -14,7 +14,8 @@ test("Carte, Base et branding depuis le proxy", async ({ page }) => {
   page.on("pageerror", error => pageErrors.push(error.message));
 
   await page.goto("/");
-  await expect(page).toHaveURL(/\/carte$/);
+  await expect(page.getByRole("heading", { name: "Connexion" })).toBeVisible();
+  await page.goto("/carte");
   await expect(page.getByRole("img", { name: "gemapi.dev" })).toBeVisible();
   await expect(page.locator(".leaflet-container")).toBeVisible();
   await page.getByRole("button", { name: "Fonds de carte" }).click();

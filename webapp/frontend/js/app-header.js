@@ -242,6 +242,7 @@
         <div class="app-navigation-viewport">
           <nav class="main-navigation" aria-label="Navigation ${interfaceType === "map" ? "principale" : "Données"}">
             ${commands}
+            ${technical ? '<a class="menu-button" id="session-login" href="/" hidden>Connexion</a><button type="button" class="menu-button" id="session-logout" hidden>Déconnexion</button>' : ""}
             ${technical ? "" : settings()}
             <button ${technical ? "hidden" : ""} id="toggle-ai" type="button" class="menu-button"
               aria-controls="ai-panel" aria-expanded="false">Assistant IA</button>

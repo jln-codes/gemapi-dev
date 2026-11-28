@@ -28,6 +28,7 @@ const SHELL_URLS = [
   "/static/js/ai-panel.js",
   "/static/js/app-header.js",
   "/static/js/technical-shell.js",
+  "/static/js/shell-session.js",
   "/static/js/data-view-default.js",
   "/static/js/troncon-form.js",
   "/static/js/troncon-reperage.js",
@@ -134,7 +135,6 @@ const SHELL_URLS = [
 ];
 const SHELL_PATHS = new Set(SHELL_URLS);
 const SHELL_DOCUMENTS = new Map([
-  ["/", "/carte"],
   ["/carte", "/carte"],
   ["/base", "/base"],
 ]);

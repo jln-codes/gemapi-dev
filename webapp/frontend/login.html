@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#23443d">
+  <title>Connexion · gemapi.dev</title>
+  <link rel="icon" href="/branding/favicon.ico">
+  <link rel="manifest" href="/branding/site.webmanifest">
+  <link rel="stylesheet" href="/static/css/login.css">
+  <script defer src="/static/js/login.js"></script>
+</head>
+<body>
+  <main>
+    <img src="/branding/cartouche.png" width="1200" height="400" alt="gemapi.dev">
+    <h1>Connexion</h1>
+    <form method="post" autocomplete="off">
+      <label for="login">Identifiant PostgreSQL</label>
+      <input id="login" required autocapitalize="none" spellcheck="false" maxlength="63">
+      <label for="password">Mot de passe</label>
+      <input id="password" type="password" required autocomplete="off">
+      <button disabled>Se connecter</button>
+      <p role="status" aria-live="polite"></p>
+    </form>
+  </main>
+</body>
+</html>

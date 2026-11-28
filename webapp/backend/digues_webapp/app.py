@@ -9,6 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
+from .auth import Authentication
 from .basemap_catalog import basemap_catalog_payload
 from .protected_routes import register_closed_routes
 from .resources import frontend_directory
@@ -41,11 +42,16 @@ BUILD_ID = calculate_frontend_build_id(FRONTEND_DIRECTORY)
 
 
 def create_app() -> FastAPI:
-    application = FastAPI(title="gemapi.dev", version=APP_VERSION)
+    auth = Authentication()
+    application = FastAPI(title="gemapi.dev", version=APP_VERSION, lifespan=auth.lifespan)
+    auth.register(application)
 
     @application.get("/", include_in_schema=False)
     def index():
-        return RedirectResponse("/carte")
+        return FileResponse(FRONTEND_DIRECTORY / "login.html", headers={
+            "Cache-Control": "no-store", "Referrer-Policy": "no-referrer",
+            "Content-Security-Policy": "default-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'",
+        })
 
     @application.get("/carte", include_in_schema=False)
     def map_page():
