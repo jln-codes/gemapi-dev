@@ -1,4 +1,5 @@
 import os
+from threading import Event
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 
@@ -78,6 +79,21 @@ class SecurityHTTP(TestCase):
             auth.verify_demo()
             self.assertFalse(auth.demo_verified)
             connect.assert_not_called()
+
+    def test_periodic_cleaner_returns_slot_without_http_activity(self):
+        closed = Event()
+        conn = MagicMock()
+        conn.close.side_effect = closed.set
+        with patch.dict(os.environ, {'AUTH_ABSOLUTE_SECONDS': '1', 'AUTH_IDLE_SECONDS': '60',
+                                     'AUTH_PER_ACCOUNT': '1'}), \
+                patch.object(db, 'open_individual', return_value=(conn, 'fixture')), \
+                TestClient(create_app(), base_url='https://site.test') as browser:
+            def login():
+                return browser.post('/api/auth/login', headers=self.headers, json=self.body)
+
+            self.assertEqual(login().status_code, 200)
+            self.assertTrue(closed.wait(4), 'Le balayage doit libérer le canal sans requête HTTP')
+            self.assertEqual(login().status_code, 200)
 
     def test_single_worker(self):
         with patch.dict(os.environ, {'WEB_CONCURRENCY':'2'}), self.assertRaises(RuntimeError):
