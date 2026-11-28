@@ -78,18 +78,26 @@ def install(schema):
     start = body.index("SELECT pg_catalog.set_config(")
     end = body.index(";", start) + 1
     body = "CREATE TABLE " + body[:start] + body[end:]
+    path = trusted_path(schema)
     identifier(schema)
-    return trusted_path(schema) + f"""
+    return f"""
+SET LOCAL search_path = pg_catalog, pg_temp;
+SELECT set_config('gemapi_install.destination', {literal(schema)}, true);
 SELECT pg_advisory_xact_lock(hashtextextended(current_setting('gemapi_install.destination'),0));
+DO $guard$
+DECLARE dest text := current_setting('gemapi_install.destination');
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_namespace WHERE nspname=dest) THEN
+    EXECUTE format('CREATE SCHEMA %I',dest);
+  END IF;
+END $guard$;
+""" + path + """
 DO $guard$
 DECLARE dest text := current_setting('gemapi_install.destination');
 BEGIN
   IF EXISTS (SELECT FROM pg_depend d JOIN pg_namespace n ON n.oid=d.refobjid
              WHERE d.refclassid='pg_namespace'::regclass AND n.nspname=dest)
   THEN RAISE EXCEPTION 'Installation neuve requise : schéma occupé'; END IF;
-  IF NOT EXISTS (SELECT FROM pg_namespace WHERE nspname=dest) THEN
-    EXECUTE format('CREATE SCHEMA %I',dest);
-  END IF;
 END $guard$;
 """ + render(body, schema)
 

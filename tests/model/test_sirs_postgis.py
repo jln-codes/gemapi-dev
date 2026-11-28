@@ -328,6 +328,21 @@ class Qualification:
         with self.rejected("P0001", message="CREATE accordé"):
             self.c.execute(install.install(other))
 
+    def test_postgis_absent_sans_modification(self):
+        with closing(self.connect(database="postgres")) as empty, empty.cursor() as c:
+            with self.assertRaisesRegex(psycopg2.Error, "PostGIS absent"):
+                c.execute(install.transaction(install.install("sans_extension")))
+            empty.rollback()
+            c.execute("SELECT to_regnamespace('sans_extension'), EXISTS "
+                      "(SELECT FROM pg_catalog.pg_extension WHERE extname='postgis')")
+            self.assertEqual(c.fetchone(), (None, False))
+
+    def test_droits_par_defaut_du_schema_neuf(self):
+        self.c.execute("ALTER DEFAULT PRIVILEGES GRANT CREATE ON SCHEMAS TO PUBLIC")
+        with self.rejected("P0001", message="CREATE accordé"):
+            self.c.execute(install.install("destination_ouverte"))
+        self.assertIsNone(self.one("SELECT to_regnamespace('destination_ouverte')"))
+
     def test_installation_sur_base_occupee(self):
         # Le script gère sa propre transaction. Une deuxième installation doit laisser le premier état intact.
         with self.assertRaisesRegex(psycopg2.Error, "Installation neuve requise"):
